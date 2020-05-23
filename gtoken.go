@@ -23,7 +23,7 @@ import (
 // - tag attributes
 // - whatever additional stuff is available for Markdown tokens
 //
-// NOTE that XML Directives are later "normalized", but that's another story.
+// NOTE XML Directives are later "normalized", but that's another story.
 //
 type GToken struct {
 	// Keep the wrapped-original token around, just in case.
@@ -35,7 +35,7 @@ type GToken struct {
 	// GTagTokType enumerates the types of struct `GToken` and also the types of
 	// struct `GTag`, which are a strict superset. Therefore the two structs use
 	// a shared "type" enumeration. <br/>
-	// NOTE that "EE" (`EndElement`) is maybe (but probably not) OK for a
+	// NOTE "EE" (`EndElement`) is maybe (but probably not) OK for a
 	// `GToken.Type` but certainly not for a `GTag.Type`, cos the existence
 	// of a matching `EndElement` for every `StartElement` should be assumed
 	// (but need not actually be present) in a valid `GTree`.

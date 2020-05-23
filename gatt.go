@@ -8,7 +8,7 @@ import (
 // This file: Generic Golang XML Attributes.
 // Struct `GAtt` is a renaming of struct `xml.Attr`.
 
-// NOTE: In LwDITA, the `class` attribute can have more than one value,
+// NOTE In LwDITA, the `class` attribute can have more than one value,
 // separated by space, like this:
 //   <p class="a b c">Alice In Wonderland</p>
 // Order does not matter.

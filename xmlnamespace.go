@@ -41,7 +41,7 @@ var XML_NS_Recognized = []string{
 // - https://www.w3.org/2001/xml.xsd
 // - https://www.w3.org/TR/xmlbase/
 
-// NOTE also: other names beginning 'xml'.
+// NOTE Also other names beginning 'xml'.
 // The XML spec reserves all names beginning with the letters 'xml'
 // in any combination of upper & lower -case for use by the W3C.
 // To date three such names have been given definitions — although
@@ -51,7 +51,7 @@ var XML_NS_Recognized = []string{
 // - "xmlns": See namespace declarations.
 // - xml-stylesheet: See the xml-stylesheet processing instruction.
 
-// NOTE about "xml:id": https://www.w3.org/TR/xml-id/ :
+// NOTE About "xml:id": https://www.w3.org/TR/xml-id/ :
 // The normalized value of the attribute is an NCName
 // IAW "Namespaces in XML Recommendation" i.e. NCName
 // for XML 1.0 (or NCName for XML 1.1).

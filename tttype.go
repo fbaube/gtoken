@@ -5,7 +5,7 @@ package gtoken
 type TTType string
 
 // GTagTokTypes is CDATA, ID/REF, etc., plus a reserved/TBD entry for "enum".
-// NOTE that these strings are used in comments thruout this package.
+// NOTE These strings are used in comments thruout this package.
 var TTTypes = []TTType{
 	"nilerror",
 	"SE",  // StartElement  // could be:  "<s>"

@@ -99,7 +99,7 @@ func DoGTokens_xml(pCPR *PU.ConcreteParseResults_xml) ([]*GToken, error) {
 				continue
 				// ilog.Printf("PCDATA is all whitespace: \n")
 				// DO NOTHING
-				// NOTE This may do weird things to elements
+				// NOTE:510 This may do weird things to elements
 				// that have text content models.
 				// println("WARNING: Got an all-whitespace xml.CharData")
 			}

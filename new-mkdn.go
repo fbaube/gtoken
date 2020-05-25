@@ -5,134 +5,7 @@ import (
 	S "strings"
 	PU "github.com/fbaube/parseutils"
 	"github.com/yuin/goldmark/ast"
-	/*
-	"github.com/yuin/goldmark/text"
-	xast "github.com/yuin/goldmark/extension/ast"
-	past "github.com/yuin/goldmark/parser"
-	*/
-)
-
-/*
-type MkdnToken struct {
-	ast.Node
-	NodeDepth    int // from node walker
-	NodeType     string // "nil", "Blk", "Inl", "Doc"
-	NodeKind     string // the many rich text tags
-	NodeKindEnum ast.NodeKind
-	NodeKindInt  int
-	// NodeText is the text of the MD node,
-	//  and it is not present for all nodes.
-	NodeText string
-	// DitaTag and HtmlTag are the equivalent LwDITA and (X)HTML tags,
-	// possibly with an attribute specified too. sDitaTag is authoritative;
-	// sHtmlTag is provided mainly as an aid to understanding the code.
-	DitaTag, HtmlTag string
-	NodeNumeric      int // Headings, Emphasis, ...?
-}
-*/
-
-/*
-var SS = "nilBLKINLDOC"
-
-func idump(s string, p ast.Node) {
-	nt := p.Type()
-	nti := 3 * int(nt)
-	nk := p.Kind()
-	fmt.Printf("ast.Kind%s:\t nt(%d:%s) nk(%2d:%s) \n",
-		s, nt, SS[nti:nti+3], nk, nk.String())
-}
-
-func init() {
-	var p ast.Node
-	p = ast.NewDocument()
-	idump("Document", p)
-	p = ast.NewTextBlock()
-	idump("TextBlock", p)
-	p = ast.NewParagraph()
-	idump("Paragraph", p)
-	p = ast.NewHeading(1)
-	idump("Heading", p)
-	p = ast.NewThematicBreak()
-	idump("ThematcBrk", p)
-	p = ast.NewCodeBlock()
-	idump("CodeBlock", p)
-	p = ast.NewFencedCodeBlock(ast.NewText())
-	idump("FncdCdBlk", p)
-	p = ast.NewBlockquote()
-	idump("Blockquote", p)
-	p = ast.NewList('-')
-	idump("List   ", p)
-	p = ast.NewListItem(1)
-	idump("ListItem", p)
-	p = ast.NewHTMLBlock(1)
-	idump("HTMLBlock", p)
-	p = ast.NewTextSegment(text.NewSegment(0,4))
-	idump("TextSegmt", p)
-	p = ast.NewString([]byte("koe"))
-	idump("String ", p)
-	p = ast.NewCodeSpan()
-	idump("CodeSpan", p)
-	p = ast.NewEmphasis(1)
-	idump("Emphasis", p)
-	p = ast.NewLink()
-	idump("Link   ", p)
-	p = ast.NewImage(ast.NewLink())
-	idump("Image  ", p)
-	p = ast.NewAutoLink(ast.AutoLinkURL, ast.NewText())
-	idump("AutoLink", p)
-	p = ast.NewRawHTML()
-	idump("RawHTML", p)
-
-	println("---")
-	p = past.NewDelimiter(false, false, 2, '-', nil)
-	idump("Delimiter", p)
-	// p = past.NewLinkLabelState()
-	println("ast.KindLinkLabelState: is a stack")
-
-	println("---")
-	p = xast.NewDefinitionList(1, ast.NewParagraph())
-	idump("DefinitionList", p)
-	p = xast.NewDefinitionTerm()
-	idump("DefinitionTerm", p)
-	p = xast.NewDefinitionDescription()
-	idump("Def'nDescr'n", p)
-	p = xast.NewFootnoteLink(1)
-	idump("FootnoteLink", p)
-	p = xast.NewFootnoteBackLink(1)
-	idump("FtntBackLink", p)
-	p = xast.NewFootnote([]byte("koe"))
-	idump("Footnote", p)
-	p = xast.NewFootnoteList()
-	idump("FootnoteList", p)
-	p = xast.NewStrikethrough()
-	idump("Strikethrough", p)
-	p = xast.NewTable()
-	idump("Table  ", p)
-	p = xast.NewTableRow([]xast.Alignment{xast.AlignLeft})
-	idump("TableRow", p)
-	p = xast.NewTableHeader(xast.NewTableRow([]xast.Alignment{xast.AlignLeft}))
-	idump("TableHeader", p)
-	p = xast.NewTableCell()
-	idump("TableCell", p)
-	p = xast.NewTaskCheckBox(false)
-	idump("TaskCheckBox", p)
-	/*
-	NewDefinitionDescription() *DefinitionDescription {
-	NewDefinitionList(offset int, para *gast.Paragraph) *DefinitionList {
-	NewDefinitionTerm() *DefinitionTerm {
-	NewFootnote(ref []byte) *Footnote {
-	NewFootnoteBackLink(index int) *FootnoteBackLink {
-	NewFootnoteLink(index int) *FootnoteLink {
-	NewFootnoteList() *FootnoteList {
-	NewStrikethrough() *Strikethrough {
-	NewTable() *Table {
-	NewTableCell() *TableCell {
-	NewTableHeader(row *TableRow) *TableHeader {
-	NewTableRow(alignments []Alignment) *TableRow {
-	NewTaskCheckBox(checked bool) *TaskCheckBox {
-* /
-}
-*/
+	)
 
 // DoGTokens_mkdn turns every `MkdnToken` Markdown token into a
 // `GToken`. It's pretty simple, because no tree building is done yet.
@@ -214,7 +87,6 @@ func DoGTokens_mkdn(pCPR *PU.ConcreteParseResults_mkdn) ([]*GToken, error) {
 		//  and it is not present for all nodes.
 		NodeText string
 		*/
-
 		switch NK { // ast.NodeKind
 
 				case ast.KindAutoLink:

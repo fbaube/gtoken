@@ -8,6 +8,7 @@ import (
 	// "github.com/yuin/goldmark/ast"
 	SU "github.com/fbaube/stringutils"
 	PU "github.com/fbaube/parseutils"
+	XM "github.com/fbaube/xmlmodels"
 )
 
 // DoGTokens_xml is TBS.
@@ -44,11 +45,11 @@ func DoGTokens_xml(pCPR *PU.ConcreteParseResults_xml) ([]*GToken, error) {
 			p.GName = GName(xTag.Name)
 			p.GName.FixNS()
 			// println("SE:", pGT.GName.String())
-			if p.GName.Space == NS_XML {
+			if p.GName.Space == XM.NS_XML {
 				 p.GName.Space = "xml:"
 			}
 			for _, A := range xTag.Attr {
-				if A.Name.Space == NS_XML {
+				if A.Name.Space == XM.NS_XML {
 					// println("TODO check name.local: newgtoken/L36 xml:" + A.Name.Local)
 					 A.Name.Space = "xml:"
 				}
@@ -66,7 +67,7 @@ func DoGTokens_xml(pCPR *PU.ConcreteParseResults_xml) ([]*GToken, error) {
 			// type xml.EndElement struct { Name Name }
 			xTag := xml.CopyToken(xt).(xml.EndElement)
 			p.GName = GName(xTag.Name)
-			if p.GName.Space == NS_XML {
+			if p.GName.Space == XM.NS_XML {
 				 p.GName.Space = "xml:"
 			}
 			p.Keyword = ""

@@ -20,8 +20,12 @@ import (
 //
 type GName xml.Name
 
+func (p1 *GName) Equals(p2 *GName) bool {
+	return p1.Space == p2.Space && p1.Local == p2.Local
+}
+
 func (p *GName) FixNS() {
-	if p.Space != "" && !S.HasSuffix(p.Space,":") {
+	if p.Space != "" && !S.HasSuffix(p.Space, ":") {
 		p.Space = p.Space + ":"
 	}
 }
@@ -32,8 +36,9 @@ func (N GName) Echo() string {
 	// 	return N.Local
 	// }
 	// Assert colon at the end of `N.Space`
-	if N.Space != "" && !S.HasSuffix(N.Space,":") {
-		panic("Missing colon on NS")
+	if N.Space != "" && !S.HasSuffix(N.Space, ":") {
+		// panic("Missing colon on NS")
+		return N.Space + ":" + N.Local
 	}
 	return N.Space + N.Local
 }

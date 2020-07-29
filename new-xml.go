@@ -4,23 +4,23 @@ import (
 	"encoding/xml"
 	"fmt"
 	S "strings"
+
 	// "net/http"
 	// "github.com/yuin/goldmark/ast"
 	SU "github.com/fbaube/stringutils"
-	PU "github.com/fbaube/parseutils"
 	XM "github.com/fbaube/xmlmodels"
 )
 
 // DoGTokens_xml is TBS.
-func DoGTokens_xml(pCPR *PU.ConcreteParseResults_xml) ([]*GToken, error) {
+func DoGTokens_xml(pCPR *XM.ConcreteParseResults_xml) ([]*GToken, error) {
 	var XTs []xml.Token
-	var xt    xml.Token
-	var p       *GToken
+	var xt xml.Token
+	var p *GToken
 	var i int
-	var gTokens = make([]*GToken,0)
+	var gTokens = make([]*GToken, 0)
 	var gDepths = make([]int, 0)
-	var iDepth  = 1 // current depth
-	var prDpth  int // depth for printing
+	var iDepth = 1 // current depth
+	var prDpth int // depth for printing
 	var canSkip bool
 
 	if pCPR.NodeDepths != nil {
@@ -32,7 +32,7 @@ func DoGTokens_xml(pCPR *PU.ConcreteParseResults_xml) ([]*GToken, error) {
 	for i, xt = range XTs {
 		p = new(GToken)
 		p.BaseToken = xt
-		prDpth  = iDepth
+		prDpth = iDepth
 		canSkip = false
 
 		switch xt.(type) {
@@ -46,17 +46,17 @@ func DoGTokens_xml(pCPR *PU.ConcreteParseResults_xml) ([]*GToken, error) {
 			p.GName.FixNS()
 			// println("SE:", pGT.GName.String())
 			if p.GName.Space == XM.NS_XML {
-				 p.GName.Space = "xml:"
+				p.GName.Space = "xml:"
 			}
 			for _, A := range xTag.Attr {
 				if A.Name.Space == XM.NS_XML {
 					// println("TODO check name.local: newgtoken/L36 xml:" + A.Name.Local)
-					 A.Name.Space = "xml:"
+					A.Name.Space = "xml:"
 				}
 				a := GAtt(A)
 				p.GAtts = append(p.GAtts, a)
 			}
-			p.Keyword    = ""
+			p.Keyword = ""
 			p.Otherwords = ""
 			// fmt.Printf("<!--Start-Tag--> %s \n", outGT.Echo())
 			iDepth++
@@ -68,7 +68,7 @@ func DoGTokens_xml(pCPR *PU.ConcreteParseResults_xml) ([]*GToken, error) {
 			xTag := xml.CopyToken(xt).(xml.EndElement)
 			p.GName = GName(xTag.Name)
 			if p.GName.Space == XM.NS_XML {
-				 p.GName.Space = "xml:"
+				p.GName.Space = "xml:"
 			}
 			p.Keyword = ""
 			p.Otherwords = ""
@@ -105,7 +105,7 @@ func DoGTokens_xml(pCPR *PU.ConcreteParseResults_xml) ([]*GToken, error) {
 				// println("WARNING: Got an all-whitespace xml.CharData")
 			}
 			// } else {
-				// fmt.Printf("<!--Char-Data--> %s \n", outGT.Otherwords)
+			// fmt.Printf("<!--Char-Data--> %s \n", outGT.Otherwords)
 
 		case xml.Comment:
 			// type Comment []byte

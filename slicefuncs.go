@@ -36,15 +36,16 @@ func DumpTo(GTzn []*GToken, w io.Writer) {
 	}
 	// GTzn = GTzn.DeleteNils()
 	var pGT *GToken
-	var i int
 
-	for i, pGT = range GTzn {
+	for _, pGT = range GTzn {
 		if nil == pGT {
 			continue
 		}
-		if pGT.TTType == "EE" { continue }
-		fmt.Fprintf(w, "<!--[%02d:L%d]%3s--> %s%s \n",
-			i, pGT.Depth, pGT.TTType, S.Repeat("  ", pGT.Depth), pGT.Echo())
+		if pGT.TTType == "EE" {
+			continue
+		}
+		fmt.Fprintf(w, "<!--%s--> %s%s \n",
+			pGT.TTType, S.Repeat("  ", pGT.Depth), pGT.Echo())
 	}
 }
 

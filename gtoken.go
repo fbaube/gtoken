@@ -7,8 +7,9 @@ package gtoken
 import (
 	"encoding/xml"
 	"io"
-	"golang.org/x/net/html"
+
 	"github.com/yuin/goldmark/ast"
+	"golang.org/x/net/html"
 )
 
 // GToken is meant to simplify & unify tokenisation across LwDITA's three
@@ -29,8 +30,8 @@ type GToken struct {
 	// Keep the wrapped-original token around, just in case.
 	// Note that this `xml.Token` (or the entire `GToken`) might be erased in
 	// later processing, if (for example) it is a CDATA that has only whitespace.
-	BaseToken interface{}
-	Depth int
+	BaseToken         interface{}
+	Depth             int
 	IsBlock, IsInline bool
 	// GTagTokType enumerates the types of struct `GToken` and also the types of
 	// struct `GTag`, which are a strict superset. Therefore the two structs use
@@ -50,7 +51,7 @@ type GToken struct {
 	Otherwords string
 
 	NodeKind, DitaTag, HtmlTag, NodeText string
-	NodeNumeric int
+	NodeNumeric                          int
 }
 
 // BaseTokenType returns `XML`, `MKDN`, `HTML`, or future stuff TBD.
@@ -102,7 +103,7 @@ func (T GToken) Echo() string {
 		return "<!" + T.Keyword + " " + T.Otherwords + ">"
 
 	default:
-		return "??!!" + T.Keyword + " // " + T.Otherwords
+		return "UNK<" + T.Keyword + "> // " + T.Otherwords
 	}
 	return "<!-- ?! GToken.ERR ?! -->"
 }

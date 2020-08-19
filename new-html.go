@@ -96,7 +96,7 @@ func DoGTokens_html(pCPR *PU.ConcreteParseResults_html) ([]*GToken, error) {
 		if n.Attr != nil && len(n.Attr) > 0 && NT != html.DoctypeNode {
 			s += fmt.Sprintf("Attrs: %+v", n.Attr)
 		}
-		println(s)
+		fmt.Fprintf(w, "%s \n", s)
 		switch NT {
 		case html.ErrorNode:
 			p.TTType = "Err"
@@ -160,7 +160,7 @@ func DoGTokens_html(pCPR *PU.ConcreteParseResults_html) ([]*GToken, error) {
 		gTokens = append(gTokens, p)
 		gDepths = append(gDepths, p.Depth)
 
-		fmt.Fprintf(w, "HAH! "+s)
+		fmt.Fprintf(w, s)
 	}
 	// Only for XML! Not for HTML.
 	// pCPR.NodeDepths = gDepths

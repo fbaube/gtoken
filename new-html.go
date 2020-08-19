@@ -2,19 +2,28 @@ package gtoken
 
 import (
 	"fmt"
+	"io"
+	"os"
 	S "strings"
+
 	PU "github.com/fbaube/parseutils"
 	"golang.org/x/net/html"
 	// "golang.org/x/net/html/atom"
 )
 
 func DataOfHtmlNode(n *html.Node) string {
-	datom  := n.DataAtom
+	datom := n.DataAtom
 	datomS := S.TrimSpace(datom.String())
-	dataS  := S.TrimSpace(n.Data)
-	if  dataS == datomS { return dataS }
-	if  dataS == "" { return datomS }
-	if datomS == "" { return dataS }
+	dataS := S.TrimSpace(n.Data)
+	if dataS == datomS {
+		return dataS
+	}
+	if dataS == "" {
+		return datomS
+	}
+	if datomS == "" {
+		return dataS
+	}
 	s := fmt.Sprintf("<<%s>> v <<%s>>", dataS, datomS)
 	println("HtmlNode data mismatch!:", s)
 	return s
@@ -27,24 +36,30 @@ func DoGTokens_html(pCPR *PU.ConcreteParseResults_html) ([]*GToken, error) {
 	var NL []*html.Node
 	var DL []int
 	var p *GToken
-	var gTokens = make([]*GToken,0)
+	var gTokens = make([]*GToken, 0)
 	var gDepths = make([]int, 0)
 	var NT html.NodeType // 1..3
 	var gotXmlProlog bool
+	var w io.Writer
 
 	NL = pCPR.NodeList
 	DL = pCPR.NodeDepths
 
+	if pCPR.DumpDest != nil {
+		w = pCPR.DumpDest
+	} else {
+		w = os.Stdout
+	}
 	// First dump them all in an indented tree
 	/*
-	println("======================================")
-	println("MkdnTokens TREE DUMP:")
-	for _, pp := range mtokens {
-		p := pp.(MkdnToken)
-		var pfx = S.Repeat("  ", p.NodeDepth-1)
-		println(pfx, p.NodeType[:1], S.TrimPrefix(p.NodeKind, "Kind"),
-			p.DitaTag, p.HtmlTag, p.NodeText)
-	}
+		println("======================================")
+		println("MkdnTokens TREE DUMP:")
+		for _, pp := range mtokens {
+			p := pp.(MkdnToken)
+			var pfx = S.Repeat("  ", p.NodeDepth-1)
+			println(pfx, p.NodeType[:1], S.TrimPrefix(p.NodeKind, "Kind"),
+				p.DitaTag, p.HtmlTag, p.NodeText)
+		}
 	*/
 	for i, n := range NL {
 		p = new(GToken)
@@ -60,9 +75,9 @@ func DoGTokens_html(pCPR *PU.ConcreteParseResults_html) ([]*GToken, error) {
 			continue
 		}
 		/*
-		fmt.Printf("html: NT<%d/%s> datom<%s> Data<%s> NS<%s> \n",
-			S.TrimSpace(datom.String()), S.TrimSpace(n.Data), n.Namespace)
-			// and Attr []Attribute
+			fmt.Printf("html: NT<%d/%s> datom<%s> Data<%s> NS<%s> \n",
+				S.TrimSpace(datom.String()), S.TrimSpace(n.Data), n.Namespace)
+				// and Attr []Attribute
 		*/
 		s := fmt.Sprintf("[%02d:L%d]%s (%d:%s)  ",
 			i, p.Depth, S.Repeat("  ", p.Depth-1), NT, PU.NTstring(NT))
@@ -133,17 +148,19 @@ func DoGTokens_html(pCPR *PU.ConcreteParseResults_html) ([]*GToken, error) {
 				// fmt.Printf("\t Attr: %+v \n", a)
 				fmt.Printf("\t NS<%s> Key<%s> Val: %s \n", a.Namespace, a.Key, a.Val)
 			}
-		/*
-		case html.RawNode:
-		  println("HTML RAW node")
-		case html.Directive: // type Directive []byte
-			p.TTType = "Dir"
-			s := S.TrimSpace(string([]byte(xt.(xml.Directive))))
-			p.Keyword, p.Otherwords = SU.SplitOffFirstWord(s)
-		*/
+			/*
+				case html.RawNode:
+				  println("HTML RAW node")
+				case html.Directive: // type Directive []byte
+					p.TTType = "Dir"
+					s := S.TrimSpace(string([]byte(xt.(xml.Directive))))
+					p.Keyword, p.Otherwords = SU.SplitOffFirstWord(s)
+			*/
 		}
 		gTokens = append(gTokens, p)
 		gDepths = append(gDepths, p.Depth)
+
+		fmt.Fprintf(w, "HAH! "+s)
 	}
 	// Only for XML! Not for HTML.
 	// pCPR.NodeDepths = gDepths
@@ -151,7 +168,7 @@ func DoGTokens_html(pCPR *PU.ConcreteParseResults_html) ([]*GToken, error) {
 	return gTokens, nil
 }
 
-		/*
+/*
 		switch NT { // ast.NodeKind
 			/*
 			    Type      NodeType

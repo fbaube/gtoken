@@ -3,6 +3,8 @@ package gtoken
 import (
 	"encoding/xml"
 	"fmt"
+	"io"
+	"os"
 	S "strings"
 
 	// "net/http"
@@ -22,6 +24,13 @@ func DoGTokens_xml(pCPR *XM.ConcreteParseResults_xml) ([]*GToken, error) {
 	var iDepth = 1 // current depth
 	var prDpth int // depth for printing
 	var canSkip bool
+	var w io.Writer
+
+	if pCPR.DumpDest != nil {
+		w = pCPR.DumpDest
+	} else {
+		w = os.Stdout
+	}
 
 	if pCPR.NodeDepths != nil {
 		panic("XML tokens already have depths")
@@ -137,7 +146,7 @@ func DoGTokens_xml(pCPR *XM.ConcreteParseResults_xml) ([]*GToken, error) {
 			if canSkip {
 				sCS = "(canSkip?)"
 			} else {
-				fmt.Printf("[%02d:L%d]%s (%s) %s %s \n",
+				fmt.Fprintf(w, "[%02d:L%d]%s (%s) %s %s \n",
 					i, prDpth, S.Repeat("  ", prDpth), p.TTType, p.Echo(), sCS)
 			}
 		}

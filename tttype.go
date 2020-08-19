@@ -8,13 +8,13 @@ type TTType string
 // NOTE These strings are used in comments thruout this package.
 var TTTypes = []TTType{
 	"nilerror",
-	"SE",  // StartElement  // could be:  "<s>"
-	"EE",  // EndElement    // could be: "</s>" // Not used in GTokens & GTrees
-	"SC",  // SelfClosingTag// could be: "<s/>" // Usage is unclear / TBD
-	"CD",  // CDATA         // could be: "s"
-	"PI",  // Proc. Instr.  // could be: "<?s?>"
-	"Cmt", // XML comment   // could be: "<!--s-->"
-	"Dir", // XML directive // could be: "<!s>"
+	"SE",  // StartElement  // could be: StELm / "<s>"
+	"EE",  // EndElement    // could be: Endlm / "</s>" // Not used in GTokens & GTrees
+	"SC",  // SelfClosingTag// could be: SCTag / "<s/>" // Usage is unclear / TBD
+	"CD",  // CDATA         // could be: ChDat / "s"
+	"PI",  // Proc. Instr.  // could be: PrIns / "<?s?>"
+	"Cmt", // XML comment   // could be: Comnt / "<!--s-->"
+	"Dir", // XML directive // could be: Drctv / "<!s>"
 	// The following are actually DIRECTIVE SUBTYPES, but they
 	// are put in this list so that they can be assigned freely.
 	"DOCTYPE",
@@ -47,5 +47,5 @@ func (TT TTType) LongForm() string {
 	case "Doc":
 		return "DocuStart"
 	}
-	return string(TT) 
+	return string(TT)
 }

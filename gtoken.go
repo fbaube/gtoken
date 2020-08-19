@@ -30,8 +30,9 @@ type GToken struct {
 	// Keep the wrapped-original token around, just in case.
 	// Note that this `xml.Token` (or the entire `GToken`) might be erased in
 	// later processing, if (for example) it is a CDATA that has only whitespace.
-	BaseToken         interface{}
-	Depth             int
+	BaseToken interface{}
+	Depth     int
+	// XM.FilePosition
 	IsBlock, IsInline bool
 	// GTagTokType enumerates the types of struct `GToken` and also the types of
 	// struct `GTag`, which are a strict superset. Therefore the two structs use

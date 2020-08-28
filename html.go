@@ -7,6 +7,7 @@ import (
 	S "strings"
 
 	PU "github.com/fbaube/parseutils"
+	XM "github.com/fbaube/xmlmodels"
 	"golang.org/x/net/html"
 	// "golang.org/x/net/html/atom"
 )
@@ -38,6 +39,7 @@ func DoGTokens_html(pCPR *PU.ConcreteParseResults_html) ([]*GToken, error) {
 	var p *GToken
 	var gTokens = make([]*GToken, 0)
 	var gDepths = make([]int, 0)
+	var gFilPosns = make([]*XM.FilePosition, 0)
 	var NT html.NodeType // 1..3
 	var gotXmlProlog bool
 	var w io.Writer
@@ -50,6 +52,14 @@ func DoGTokens_html(pCPR *PU.ConcreteParseResults_html) ([]*GToken, error) {
 	} else {
 		w = os.Stdout
 	}
+
+	if pCPR.NodeDepths != nil {
+		println("==> XML tokens already have depths")
+	} else {
+		pCPR.NodeDepths = make([]int, 0)
+	}
+	pCPR.FilePosns = make([]*XM.FilePosition, 0)
+
 	// First dump them all in an indented tree
 	/*
 		println("======================================")
@@ -72,6 +82,7 @@ func DoGTokens_html(pCPR *PU.ConcreteParseResults_html) ([]*GToken, error) {
 			// println("HTML continued")
 			gTokens = append(gTokens, nil)
 			gDepths = append(gDepths, p.Depth)
+			gFilPosns = append(gFilPosns, &p.FilePosition)
 			continue
 		}
 		/*
@@ -79,8 +90,8 @@ func DoGTokens_html(pCPR *PU.ConcreteParseResults_html) ([]*GToken, error) {
 				S.TrimSpace(datom.String()), S.TrimSpace(n.Data), n.Namespace)
 				// and Attr []Attribute
 		*/
-		s := fmt.Sprintf("[%02d:L%d]%s (%d:%s)  ",
-			i, p.Depth, S.Repeat("  ", p.Depth-1), NT, PU.NTstring(NT))
+		s := fmt.Sprintf("[%s]%s (%d:%s)  ",
+			pCPR.AsString(i), S.Repeat("  ", p.Depth-1), NT, PU.NTstring(NT))
 
 		if NT == html.CommentNode && S.HasPrefix(theData, "?xml ") {
 			s += "XmlProlog(TODO) " + theData
@@ -159,6 +170,7 @@ func DoGTokens_html(pCPR *PU.ConcreteParseResults_html) ([]*GToken, error) {
 		}
 		gTokens = append(gTokens, p)
 		gDepths = append(gDepths, p.Depth)
+		gFilPosns = append(gFilPosns, &p.FilePosition)
 
 		fmt.Fprintf(w, s)
 	}

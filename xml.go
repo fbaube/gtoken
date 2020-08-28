@@ -33,9 +33,15 @@ func DoGTokens_xml(pCPR *XM.ConcreteParseResults_xml) ([]*GToken, error) {
 	}
 
 	if pCPR.NodeDepths != nil {
-		panic("XML tokens already have depths")
+		println("==> XML tokens already have depths")
+	} else {
+		pCPR.NodeDepths = make([]int, 0)
 	}
-	pCPR.NodeDepths = make([]int, 0)
+	if pCPR.FilePosns != nil {
+		println("==> XML tokens already have file positions")
+	} else {
+		pCPR.FilePosns = make([]*XM.FilePosition, 0)
+	}
 	XTs = pCPR.NodeList
 
 	for i, xt = range XTs {

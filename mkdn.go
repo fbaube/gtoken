@@ -7,6 +7,7 @@ import (
 	S "strings"
 
 	PU "github.com/fbaube/parseutils"
+	XM "github.com/fbaube/xmlmodels"
 	"github.com/yuin/goldmark/ast"
 )
 
@@ -21,6 +22,7 @@ func DoGTokens_mkdn(pCPR *PU.ConcreteParseResults_mkdn) ([]*GToken, error) {
 	var p *GToken
 	var gTokens = make([]*GToken, 0)
 	var gDepths = make([]int, 0)
+	var gFilPosns = make([]*XM.FilePosition, 0)
 	var NT ast.NodeType // 1..3
 	var NK ast.NodeKind
 	// var NKi int
@@ -385,6 +387,7 @@ func DoGTokens_mkdn(pCPR *PU.ConcreteParseResults_mkdn) ([]*GToken, error) {
 				fmt.Fprintf(w, "(Skipt textlis!) \n")
 				gTokens = append(gTokens, nil)
 				gDepths = append(gDepths, p.Depth)
+				gFilPosns = append(gFilPosns, &p.FilePosition)
 				continue
 			} else if canMerge {
 				// prevN  := NL[i-1]
@@ -397,6 +400,7 @@ func DoGTokens_mkdn(pCPR *PU.ConcreteParseResults_mkdn) ([]*GToken, error) {
 					fmt.Fprintf(w, "(Merged!) \n")
 					gTokens = append(gTokens, nil)
 					gDepths = append(gDepths, p.Depth)
+					gFilPosns = append(gFilPosns, &p.FilePosition)
 					continue
 				}
 			}
@@ -452,6 +456,7 @@ func DoGTokens_mkdn(pCPR *PU.ConcreteParseResults_mkdn) ([]*GToken, error) {
 		}
 		gTokens = append(gTokens, p)
 		gDepths = append(gDepths, p.Depth)
+		gFilPosns = append(gFilPosns, &p.FilePosition)
 	}
 	return gTokens, nil
 }

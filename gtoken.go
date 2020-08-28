@@ -8,6 +8,7 @@ import (
 	"encoding/xml"
 	"io"
 
+	XM "github.com/fbaube/xmlmodels"
 	"github.com/yuin/goldmark/ast"
 	"golang.org/x/net/html"
 )
@@ -32,7 +33,7 @@ type GToken struct {
 	// later processing, if (for example) it is a CDATA that has only whitespace.
 	BaseToken interface{}
 	Depth     int
-	// XM.FilePosition
+	XM.FilePosition
 	IsBlock, IsInline bool
 	// GTagTokType enumerates the types of struct `GToken` and also the types of
 	// struct `GTag`, which are a strict superset. Therefore the two structs use

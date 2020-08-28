@@ -93,13 +93,3 @@ func GetAllByTag(gTkzn []*GToken, s string) []*GToken {
 	}
 	return ret
 }
-
-/*
-func (gTkzn []*GToken)) DString() {
-	i := len(gTkzn)
-	fmt.Printf("GTokenization len<%d>\n", i)
-	for i, GT := range gTkzn {
-		fmt.Printf("  [%2d] %s \n", i, GT.Echo())
-	}
-}
-*/

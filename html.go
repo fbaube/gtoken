@@ -60,17 +60,6 @@ func DoGTokens_html(pCPR *PU.ConcreteParseResults_html) ([]*GToken, error) {
 	}
 	pCPR.FilePosns = make([]*XM.FilePosition, 0)
 
-	// First dump them all in an indented tree
-	/*
-		println("======================================")
-		println("MkdnTokens TREE DUMP:")
-		for _, pp := range mtokens {
-			p := pp.(MkdnToken)
-			var pfx = S.Repeat("  ", p.NodeDepth-1)
-			println(pfx, p.NodeType[:1], S.TrimPrefix(p.NodeKind, "Kind"),
-				p.DitaTag, p.HtmlTag, p.NodeText)
-		}
-	*/
 	for i, n := range NL {
 		p = new(GToken)
 		p.BaseToken = n

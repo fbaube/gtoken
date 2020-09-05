@@ -21,6 +21,7 @@ func DoGTokens_xml(pCPR *XM.ConcreteParseResults_xml) ([]*GToken, error) {
 	var i int
 	var gTokens = make([]*GToken, 0)
 	var gDepths = make([]int, 0)
+	var gFilPosns = make([]*XM.FilePosition, 0)
 	var iDepth = 1 // current depth
 	var prDpth int // depth for printing
 	var canSkip bool
@@ -112,6 +113,7 @@ func DoGTokens_xml(pCPR *XM.ConcreteParseResults_xml) ([]*GToken, error) {
 				p.Depth = prDpth
 				gTokens = append(gTokens, nil)
 				gDepths = append(gDepths, prDpth)
+				gFilPosns = append(gFilPosns, &p.FilePosition)
 				continue
 				// ilog.Printf("PCDATA is all whitespace: \n")
 				// DO NOTHING
@@ -146,6 +148,7 @@ func DoGTokens_xml(pCPR *XM.ConcreteParseResults_xml) ([]*GToken, error) {
 		p.Depth = prDpth
 		gTokens = append(gTokens, p)
 		gDepths = append(gDepths, prDpth)
+		gFilPosns = append(gFilPosns, &p.FilePosition)
 
 		if p != nil {
 			sCS := ""

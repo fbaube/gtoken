@@ -53,16 +53,6 @@ func DoGTokens_html(pCPR *PU.ConcreteParseResults_html) ([]*GToken, error) {
 		w = os.Stdout
 	}
 
-	if pCPR.NodeDepths != nil {
-		println("==> HTML tokens already have depths")
-	} else {
-		pCPR.NodeDepths = make([]int, 0)
-	}
-	if pCPR.FilePosns != nil {
-		println("==> HTML tokens already have file posns")
-	} else {
-		pCPR.FilePosns = make([]*XM.FilePosition, 0)
-	}
 	for i, n := range NL {
 		p = new(GToken)
 		p.BaseToken = n

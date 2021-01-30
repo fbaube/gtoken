@@ -52,7 +52,7 @@ func DoGTokens_html(pCPR *PU.ConcreteParseResults_html) ([]*GToken, error) {
 	} else {
 		w = os.Stdout
 	}
-
+	fmt.Fprintf(w, "== pCPR.NODES == (gtkn/html.go:L55) \n")
 	for i, n := range NL {
 		p = new(GToken)
 		p.BaseToken = n
@@ -89,6 +89,7 @@ func DoGTokens_html(pCPR *PU.ConcreteParseResults_html) ([]*GToken, error) {
 		if n.Attr != nil && len(n.Attr) > 0 && NT != html.DoctypeNode {
 			s += fmt.Sprintf("Attrs: %+v", n.Attr)
 		}
+		// s += " (gtkn/XHTMLl.go:L92)"
 		fmt.Fprintf(w, "%s \n", s)
 		switch NT {
 		case html.ErrorNode:

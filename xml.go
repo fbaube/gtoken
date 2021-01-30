@@ -34,6 +34,7 @@ func DoGTokens_xml(pCPR *XM.ConcreteParseResults_xml) ([]*GToken, error) {
 	}
 
 	XTs = pCPR.NodeList
+	fmt.Fprintf(w, "== XTOKENS == (gtkn/xml.go:L37) \n")
 
 	for i, xt = range XTs {
 		p = new(GToken)

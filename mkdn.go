@@ -38,6 +38,7 @@ func DoGTokens_mkdn(pCPR *PU.ConcreteParseResults_mkdn) ([]*GToken, error) {
 	} else {
 		w = os.Stdout
 	}
+	fmt.Fprintf(w, "== pCPR.NODES == %s (gtkn/mkdn.go:L41)")
 	for i, n := range NL {
 		p = new(GToken)
 		p.BaseToken = n

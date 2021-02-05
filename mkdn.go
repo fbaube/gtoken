@@ -16,7 +16,7 @@ import (
 // does merge text tokens into their preceding tokens, which leaves some
 // nils in the list of tokens.
 //
-func DoGTokens_mkdn(pCPR *PU.ConcreteParseResults_mkdn) ([]*GToken, error) {
+func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 	var NL []ast.Node
 	var DL []int
 	var p *GToken
@@ -30,7 +30,7 @@ func DoGTokens_mkdn(pCPR *PU.ConcreteParseResults_mkdn) ([]*GToken, error) {
 	var w io.Writer
 	var isText, wasText, canSkipTextless, canMerge bool
 
-	NL = pCPR.NodeList
+	NL = pCPR.NodeSlice
 	DL = pCPR.NodeDepths
 
 	if pCPR.DumpDest != nil {

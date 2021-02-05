@@ -14,7 +14,7 @@ import (
 )
 
 // DoGTokens_xml is TBS.
-func DoGTokens_xml(pCPR *XM.ConcreteParseResults_xml) ([]*GToken, error) {
+func DoGTokens_xml(pCPR *XM.ParserResults_xml) ([]*GToken, error) {
 	var XTs []xml.Token
 	var xt xml.Token
 	var p *GToken
@@ -33,7 +33,7 @@ func DoGTokens_xml(pCPR *XM.ConcreteParseResults_xml) ([]*GToken, error) {
 		w = os.Stdout
 	}
 
-	XTs = pCPR.NodeList
+	XTs = pCPR.NodeSlice
 	fmt.Fprintf(w, "== XTOKENS == (gtkn/xml.go:L37) \n")
 
 	for i, xt = range XTs {

@@ -33,7 +33,7 @@ func DataOfHtmlNode(n *html.Node) string {
 // DoGTokens_html turns every `MkdnToken` Markdown token into a
 // `GToken`. It's pretty simple, because no tree building is done yet.
 //
-func DoGTokens_html(pCPR *PU.ConcreteParseResults_html) ([]*GToken, error) {
+func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 	var NL []*html.Node
 	var DL []int
 	var p *GToken
@@ -44,7 +44,7 @@ func DoGTokens_html(pCPR *PU.ConcreteParseResults_html) ([]*GToken, error) {
 	var gotXmlProlog bool
 	var w io.Writer
 
-	NL = pCPR.NodeList
+	NL = pCPR.NodeSlice
 	DL = pCPR.NodeDepths
 
 	if pCPR.DumpDest != nil {

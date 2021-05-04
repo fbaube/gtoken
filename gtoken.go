@@ -8,6 +8,7 @@ import (
 	"encoding/xml"
 	"io"
 
+	L "github.com/fbaube/mlog"
 	XM "github.com/fbaube/xmlmodels"
 	"github.com/yuin/goldmark/ast"
 	"golang.org/x/net/html"
@@ -38,18 +39,18 @@ type GToken struct {
 	// GTagTokType enumerates the types of struct `GToken` and also the types of
 	// struct `GTag`, which are a strict superset. Therefore the two structs use
 	// a shared "type" enumeration. <br/>
-	// NOTE "EE" (`EndElement`) is maybe (but probably not) OK for a
-	// `GToken.Type` but certainly not for a `GTag.Type`, cos the existence
-	// of a matching `EndElement` for every `StartElement` should be assumed
-	// (but need not actually be present) in a valid `GTree`.
+	// NOTE "end" (`EndElement`) is maybe (but probably not) OK for a `GToken.Type`
+	// but certainly not for a `GTag.Type`, cos the existence of a matching
+	// `EndElement` for every `StartElement` should be assumed (but need not
+	// actually be present when depth info is available) in a valid `GTree`.
 	TTType
-	// GName is for XML "SE" & "EE" *only* // GElmName? GTagName?
+	// GName is for XML "Elm" & "end" *only* // GElmName? GTagName?
 	GName
-	// GAtts is for XML "SE" *only*, and HTML, and (with some finagling) MKDN
+	// GAtts is for XML "Elm" *only*, and HTML, and (with some finagling) MKDN
 	GAtts
-	// Keyword is for XML ProcInst "PI" & Directive "Dir", *only*
+	// Keyword is for XML ProcInst "PrI" & Directive "Dir", *only*
 	Keyword string
-	// Otherwords is for all *except* "SE" and "EE"
+	// Otherwords is for all *except* "Elm" and "end"
 	Otherwords string
 
 	NodeKind, DitaTag, HtmlTag, NodeText string
@@ -69,7 +70,8 @@ func (p *GToken) BaseTokenType() string {
 	case html.Node:
 		return "HTML"
 	}
-	panic("FIXME: GToken.BaseTokenType unrecognized")
+	L.L.Error("FIXME: GToken.BaseTokenType <%T> unrecognized", p.BaseToken)
+	return "ERR!"
 }
 
 // Echo implements Markupper.
@@ -79,23 +81,22 @@ func (T GToken) Echo() string {
 	switch T.TTType {
 
 	case "Doc":
-		return "<-- DOCUMENT START -->"
+		return "<-- \"Doc\" DOCUMENT START -->"
 
-	case "SE":
+	case "Elm":
 		return "<" + T.GName.Echo() + T.GAtts.Echo() + ">"
 
-	case "EE":
+	case "end":
 		return "</" + T.GName.Echo() + ">"
 
-	case "SC":
-		// panic("gparse.echo.L61.SC!")
-		println("Bogus token <SC>")
-		return "ERR!"
+	case "SC/":
+		L.L.Error("Bogus token <SC/>")
+		return "ERR"
 
-	case "CD":
+	case "ChD":
 		return T.Otherwords
 
-	case "PI":
+	case "PrI":
 		return "<?" + T.Keyword + " " + T.Otherwords + "?>"
 
 	case "Cmt":

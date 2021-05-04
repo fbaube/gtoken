@@ -3,9 +3,10 @@ package gtoken
 import (
 	"fmt"
 	"io"
-	"os"
+	"io/ioutil"
 	S "strings"
 
+	L "github.com/fbaube/mlog"
 	PU "github.com/fbaube/parseutils"
 	XM "github.com/fbaube/xmlmodels"
 	"github.com/yuin/goldmark/ast"
@@ -28,7 +29,7 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 	// var NKi int
 	// Destination for Printf's
 	var w io.Writer
-	var isText, wasText, canSkipTextless, canMerge bool
+	var isText, prevWasText, canSkipCosIsTextless, canMerge bool
 
 	NL = pCPR.NodeSlice
 	DL = pCPR.NodeDepths
@@ -36,32 +37,34 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 	if pCPR.DumpDest != nil {
 		w = pCPR.DumpDest
 	} else {
-		w = os.Stdout
+		w = ioutil.Discard // os.Stdout
 	}
-	// fmt.Fprintf(w, "== pCPR.NODES == %s (gtkn/mkdn.go:L41)")
+	L.L.Info("gtkn/mkdn...")
+
+	// ================================
+	//  FOR Every Node in the NodeList
+	// ================================
 	for i, n := range NL {
 		p = new(GToken)
 		p.BaseToken = n
 		p.Depth = DL[i]
 		NT = n.Type()
 		NK = n.Kind()
-		wasText = isText
-		canSkipTextless, canMerge = false, false
+		prevWasText = isText
+		canSkipCosIsTextless, canMerge = false, false
 		isText = (NT == ast.TypeInline && NK == ast.KindText)
 		if isText {
 			n2 := n.(*ast.Text)
 			segment := n2.Segment
 			if "" == string(pCPR.Reader.Value(segment)) {
-				canSkipTextless = true
+				canSkipCosIsTextless = true
 			} else {
-				canMerge = wasText
+				canMerge = prevWasText
 			}
 		}
-		fmt.Fprintf(w, "%s (%s) ", S.Repeat("  ", p.Depth-1), NodeTypes_mkdn[NT])
+		fmt.Fprintf(w, "[%s] %s ", pCPR.AsString(i), S.Repeat("  ", p.Depth-1))
 		//   p.DitaTag, p.HtmlTag, p.NodeText)
-		if !isText {
-			fmt.Fprintf(w, "%s> ", NK.String())
-		}
+
 		if (NK == ast.KindDocument) != (NT == ast.TypeDocument) {
 			panic("KIND/TYPE/DOC")
 		}
@@ -88,7 +91,43 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			//  and it is not present for all nodes.
 			NodeText string
 		*/
+
+		// ======= !!!!!!! =======
+		// var NodeTypeString = NodeTypes_mkdn[NT] // Blk, Inl, Doc
+		// var NodeKindString = NK.String()        // if !isText // Document, Heading, Text, Paragraph
+		// fmt.Fprintln(w, "ndType<", NodeTypeString, "> ndKind<", NodeKindString, ">")
+
 		switch NK { // ast.NodeKind
+
+		// ==========
+		//  DOCUMENT
+		// ==========
+		case ast.KindDocument:
+			// Note that any metadata comes btwn this
+			// start-of-document tag and the content ("body").
+			p.NodeKind = "KindDocument"
+			p.DitaTag = "topic"
+			p.HtmlTag = "html"
+			p.TTType = "Doc"
+			fmt.Fprintln(w, " ")
+
+		case ast.KindHeading:
+			p.NodeKind = "KindHeading"
+			p.DitaTag = "?"
+			p.HtmlTag = "h%d"
+			n2 := n.(*ast.Heading)
+			p.NodeNumeric = n2.Level
+			p.TTType = "Elm"
+			p.GName.Local = fmt.Sprintf("h%d", n2.Level)
+			fmt.Fprintf(w, "<h%d> \n", n2.Level)
+			// type Heading struct {
+			//   BaseBlock
+			//   Level returns a level of this heading.
+			//   This value is between 1 and 6.
+			//   Level int
+			// }
+		// w.WriteString("<h")
+		// w.WriteByte("0123456"[n.Level])
 
 		case ast.KindAutoLink:
 			// https://github.github.com/gfm/#autolinks
@@ -160,14 +199,6 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			//     }
 			//   } else {
 			//     r.Writer.RawWrite(w, value)
-		case ast.KindDocument:
-			// Note that metadata comes btwn this
-			// start-of-document tag and the content ("body").
-			p.NodeKind = "KindDocument"
-			p.DitaTag = "topic"
-			p.HtmlTag = "html"
-			p.TTType = "Doc"
-			fmt.Fprintf(w, "(doc) \n")
 		case ast.KindEmphasis:
 			p.NodeKind = "KindEmphasis"
 			// iLevel 2 | iLevel 1
@@ -227,23 +258,6 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			//   }
 			// } else {
 			//   w.WriteString("<!-- raw HTML omitted -->\n")
-		case ast.KindHeading:
-			p.NodeKind = "KindHeading"
-			p.DitaTag = "?"
-			p.HtmlTag = "h%d"
-			n2 := n.(*ast.Heading)
-			p.NodeNumeric = n2.Level
-			p.TTType = "SE"
-			p.GName.Local = fmt.Sprintf("h%d", n2.Level)
-			fmt.Fprintf(w, "Heading: <%d> \n", n2.Level)
-			// type Heading struct {
-			//   BaseBlock
-			//   Level returns a level of this heading.
-			//   This value is between 1 and 6.
-			//   Level int
-			// }
-		// w.WriteString("<h")
-		// w.WriteByte("0123456"[n.Level])
 		case ast.KindImage:
 			p.NodeKind = "KindImage"
 			p.DitaTag = "image"
@@ -341,9 +355,9 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			p.NodeKind = "KindParagraph"
 			p.DitaTag = "p"
 			p.HtmlTag = "p"
-			p.TTType = "SE"
+			p.TTType = "Elm"
 			p.GName.Local = "p"
-			fmt.Fprintf(w, "(para) \n")
+			fmt.Fprintf(w, "<p> \n")
 			// // n2 := n.(*ast.Paragraph)
 			// // sDump = litter.Sdump(*n2)
 			// type Paragraph struct {
@@ -384,7 +398,7 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			var theText string
 			theText = string(pCPR.Reader.Value(segment))
 
-			if canSkipTextless {
+			if canSkipCosIsTextless {
 				fmt.Fprintf(w, "(Skipt textlis!) \n")
 				gTokens = append(gTokens, nil)
 				gDepths = append(gDepths, p.Depth)
@@ -398,7 +412,7 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 				} else {
 					prevGT.Otherwords += theText
 					prevGT.NodeText += theText
-					fmt.Fprintf(w, "(Merged!) \n")
+					fmt.Fprintf(w, "(merged!) \n")
 					gTokens = append(gTokens, nil)
 					gDepths = append(gDepths, p.Depth)
 					gFilPosns = append(gFilPosns, &p.FilePosition)
@@ -408,9 +422,9 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			p.NodeText = theText
 			// p.NodeText = fmt.Sprintf("KindText:\n | %s", string(TheReader.Value(segment)))
 			// p.NodeText = /* fmt.Sprintf("KindText:\n | %s", */ string(pCPR.Reader.Value(segment)) //)
-			p.TTType = "CD"
+			p.TTType = "ChD"
 			p.Otherwords = theText
-			fmt.Fprintf(w, "Text: %s \n", p.NodeText)
+			fmt.Fprintf(w, "Text<%s> \n", p.NodeText)
 			/*
 				if n.IsRaw() {
 					r.Writer.RawWrite(w, segment.Value(TheSource))
@@ -454,6 +468,7 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			p.NodeKind = "KindUNK"
 			p.DitaTag = "UNK"
 			p.HtmlTag = "UNK"
+			L.L.Error("Got unknown Markdown NodeKind: %+v", NK)
 		}
 		gTokens = append(gTokens, p)
 		gDepths = append(gDepths, p.Depth)

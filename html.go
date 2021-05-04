@@ -3,9 +3,10 @@ package gtoken
 import (
 	"fmt"
 	"io"
-	"os"
+	"io/ioutil"
 	S "strings"
 
+	L "github.com/fbaube/mlog"
 	PU "github.com/fbaube/parseutils"
 	XM "github.com/fbaube/xmlmodels"
 	"golang.org/x/net/html"
@@ -30,8 +31,10 @@ func DataOfHtmlNode(n *html.Node) string {
 	return s
 }
 
-// DoGTokens_html turns every `MkdnToken` Markdown token into a
-// `GToken`. It's pretty simple, because no tree building is done yet.
+// NTstring: 0="Err", 1="ChD", 2="Doc", 3="Elm", 4="Cmt", 5="Doctype",
+
+// DoGTokens_html turns every `HtmlToken` HTML token (from stdlib) into
+// a `GToken`. It's pretty simple, because no tree building is done yet.
 //
 func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 	var NL []*html.Node
@@ -50,9 +53,13 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 	if pCPR.DumpDest != nil {
 		w = pCPR.DumpDest
 	} else {
-		w = os.Stdout
+		w = ioutil.Discard // os.Stdout
 	}
-	fmt.Fprintf(w, "== pCPR.NODES == (gtkn/html.go:L55) \n")
+	L.L.Info("gtkn/html...")
+
+	// ================================
+	//  FOR Every Node in the NodeList
+	// ================================
 	for i, n := range NL {
 		p = new(GToken)
 		p.BaseToken = n
@@ -72,36 +79,51 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 				S.TrimSpace(datom.String()), S.TrimSpace(n.Data), n.Namespace)
 				// and Attr []Attribute
 		*/
-		s := fmt.Sprintf("[%s]%s (%d:%s)  ",
-			pCPR.AsString(i), S.Repeat("  ", p.Depth-1), NT, PU.NTstring(NT))
+		s := fmt.Sprintf("[%s] %s (%s)  ",
+			pCPR.AsString(i), S.Repeat("  ", p.Depth-1), PU.NTstring(NT)) // %d,NT)
 
 		if NT == html.CommentNode && S.HasPrefix(theData, "?xml ") {
 			s += "XmlProlog(TODO) " + theData
 			gotXmlProlog = true
 		} else if theData == "" {
-			s += "(nil data) "
+			if NT != 2 { // If not Doc start
+				s += "(nil data) "
+			}
 		} else {
-			s += fmt.Sprintf("data<%s>", theData)
+			if NT != 3 && NT != 1 { // neither StartElement nor ChD (Text)
+				s += "data"
+			}
+			if NT == 1 { // ChD (Text)
+				s += fmt.Sprintf("\"%s\"", theData)
+			} else {
+				s += fmt.Sprintf("<%s>", theData)
+			}
 		}
 		if n.Namespace != "" {
 			s += fmt.Sprintf("NS<%s> ", n.Namespace)
 		}
-		if n.Attr != nil && len(n.Attr) > 0 && NT != html.DoctypeNode {
+		if n.Attr != nil && len(n.Attr) > 0 { // && NT != html.DoctypeNode {
 			s += fmt.Sprintf("Attrs: %+v", n.Attr)
 		}
 		// s += " (gtkn/XHTMLl.go:L92)"
-		fmt.Fprintf(w, "%s \n", s)
+		// // fmt.Fprintf(w, "(L98) %s \n", s)
+
 		switch NT {
-		case html.ErrorNode:
-			p.TTType = "Err"
-			println("HTML ERR node")
-		case html.TextNode:
-			p.TTType = "CD"
-			p.Otherwords = theData
+
+		// ==========
+		//  DOCUMENT
+		// ==========
 		case html.DocumentNode:
 			p.TTType = "Doc"
+
+		case html.ErrorNode:
+			p.TTType = "Err"
+			L.L.Warning("Got HTML ERR node")
+		case html.TextNode:
+			p.TTType = "ChD"
+			p.Otherwords = theData
 		case html.ElementNode:
-			p.TTType = "SE"
+			p.TTType = "Elm"
 			// A StartElement has an xml.Name (same as GName) and Attributes (GAtt's):
 			// type xml.StartElement struct { Name Name ; Attr []Attr }
 			p.GName.Local = theData
@@ -133,14 +155,14 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 			p.TTType = "Cmt"
 			p.Otherwords = theData
 			if gotXmlProlog {
-				p.TTType = "PI"
+				p.TTType = "PrI"
 			}
 		case html.DoctypeNode:
 			p.TTType = "Dir"
 			p.Otherwords = theData
 			for _, a := range n.Attr {
 				// fmt.Printf("\t Attr: %+v \n", a)
-				fmt.Printf("\t NS<%s> Key<%s> Val: %s \n", a.Namespace, a.Key, a.Val)
+				L.L.Dbg("\t Attr: NS<%s> Key<%s> Val: %s", a.Namespace, a.Key, a.Val)
 			}
 			/*
 				case html.RawNode:
@@ -150,18 +172,22 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 					s := S.TrimSpace(string([]byte(xt.(xml.Directive))))
 					p.Keyword, p.Otherwords = SU.SplitOffFirstWord(s)
 			*/
+		default:
+			L.L.Error("Got unknown HTML NT: %+v", NT)
 		}
 		gTokens = append(gTokens, p)
 		gDepths = append(gDepths, p.Depth)
 		gFilPosns = append(gFilPosns, &p.FilePosition)
 
-		fmt.Fprintf(w, s)
+		fmt.Fprintf(w, s+"\n")
 	}
 	// Only for XML! Not for HTML.
 	// pCPR.NodeDepths = gDepths
 
 	return gTokens, nil
 }
+
+// ====================================================================================
 
 /*
 		switch NT { // ast.NodeKind
@@ -185,7 +211,7 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 
 					case html.EndElement:
 						// An EndElement has a Name (GName).
-						p.TTType = "EE"
+						p.TTType = "end"
 						// type xml.EndElement struct { Name Name }
 						xTag := xml.CopyToken(xt).(xml.EndElement)
 						p.GName = GName(xTag.Name)
@@ -200,8 +226,6 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 
 
 * /
-
-
 
 /*
 				case ast.KindAutoLink:

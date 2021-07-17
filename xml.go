@@ -4,38 +4,30 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"io/ioutil"
 	S "strings"
 
 	// "net/http"
 	// "github.com/yuin/goldmark/ast"
 	L "github.com/fbaube/mlog"
 	SU "github.com/fbaube/stringutils"
-	XM "github.com/fbaube/xmlmodels"
+	XU "github.com/fbaube/xmlutils"
 )
 
 // DoGTokens_xml is TBS.
-func DoGTokens_xml(pCPR *XM.ParserResults_xml) ([]*GToken, error) {
+func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 	var XTs []xml.Token
 	var xt xml.Token
 	var p *GToken
 	var i int
 	var gTokens = make([]*GToken, 0)
 	var gDepths = make([]int, 0)
-	var gFilPosns = make([]*XM.FilePosition, 0)
+	var gFilPosns = make([]*XU.FilePosition, 0)
 	var iDepth = 1 // current depth
 	var prDpth int // depth for printing
 	var canSkip bool
-	var w io.Writer
-
-	if pCPR.DumpDest != nil {
-		w = pCPR.DumpDest
-	} else {
-		w = ioutil.Discard // os.Stdout
-	}
+	var w io.Writer = pCPR.DiagDest
 
 	XTs = pCPR.NodeSlice
-
 	L.L.Info("gtkn/xml...")
 
 	// ==========================================
@@ -62,11 +54,11 @@ func DoGTokens_xml(pCPR *XM.ParserResults_xml) ([]*GToken, error) {
 			p.GName = GName(xTag.Name)
 			p.GName.FixNS()
 			// println("Elm:", pGT.GName.String())
-			if p.GName.Space == XM.NS_XML {
+			if p.GName.Space == XU.NS_XML {
 				p.GName.Space = "xml:"
 			}
 			for _, A := range xTag.Attr {
-				if A.Name.Space == XM.NS_XML {
+				if A.Name.Space == XU.NS_XML {
 					// println("TODO check name.local: newgtoken/L36 xml:" + A.Name.Local)
 					A.Name.Space = "xml:"
 				}
@@ -84,7 +76,7 @@ func DoGTokens_xml(pCPR *XM.ParserResults_xml) ([]*GToken, error) {
 			// type xml.EndElement struct { Name Name }
 			xTag := xml.CopyToken(xt).(xml.EndElement)
 			p.GName = GName(xTag.Name)
-			if p.GName.Space == XM.NS_XML {
+			if p.GName.Space == XU.NS_XML {
 				p.GName.Space = "xml:"
 			}
 			p.Keyword = ""

@@ -3,12 +3,11 @@ package gtoken
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	S "strings"
 
 	L "github.com/fbaube/mlog"
 	PU "github.com/fbaube/parseutils"
-	XM "github.com/fbaube/xmlmodels"
+	XU "github.com/fbaube/xmlutils"
 	"github.com/yuin/goldmark/ast"
 )
 
@@ -23,22 +22,16 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 	var p *GToken
 	var gTokens = make([]*GToken, 0)
 	var gDepths = make([]int, 0)
-	var gFilPosns = make([]*XM.FilePosition, 0)
+	var gFilPosns = make([]*XU.FilePosition, 0)
 	var NT ast.NodeType // 1..3
 	var NK ast.NodeKind
 	// var NKi int
 	// Destination for Printf's
-	var w io.Writer
+	var w io.Writer = pCPR.DiagDest
 	var isText, prevWasText, canSkipCosIsTextless, canMerge bool
 
 	NL = pCPR.NodeSlice
 	DL = pCPR.NodeDepths
-
-	if pCPR.DumpDest != nil {
-		w = pCPR.DumpDest
-	} else {
-		w = ioutil.Discard // os.Stdout
-	}
 	L.L.Info("gtkn/mkdn...")
 
 	// ================================

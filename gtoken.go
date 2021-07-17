@@ -9,7 +9,7 @@ import (
 	"io"
 
 	L "github.com/fbaube/mlog"
-	XM "github.com/fbaube/xmlmodels"
+	XU "github.com/fbaube/xmlutils"
 	"github.com/yuin/goldmark/ast"
 	"golang.org/x/net/html"
 )
@@ -34,7 +34,7 @@ type GToken struct {
 	// later processing, if (for example) it is a CDATA that has only whitespace.
 	BaseToken interface{}
 	Depth     int
-	XM.FilePosition
+	XU.FilePosition
 	IsBlock, IsInline bool
 	// GTagTokType enumerates the types of struct `GToken` and also the types of
 	// struct `GTag`, which are a strict superset. Therefore the two structs use
@@ -118,7 +118,12 @@ func (T GToken) EchoTo(w io.Writer) {
 
 // String implements Markupper.
 func (T GToken) String() string {
-	return ("<!--" + T.TTType.LongForm() + "-->  " + T.Echo())
+	// return ("<!--" + T.TTType.LongForm() + "-->  " + T.Echo())
+	var s3 = string(T.TTType)
+	if s3 == "end" {
+		s3 = " / "
+	}
+	return ("[" + s3 + "] " + T.Echo())
 }
 
 // String implements Markupper.

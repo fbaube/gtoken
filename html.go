@@ -3,12 +3,11 @@ package gtoken
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	S "strings"
 
 	L "github.com/fbaube/mlog"
 	PU "github.com/fbaube/parseutils"
-	XM "github.com/fbaube/xmlmodels"
+	XU "github.com/fbaube/xmlutils"
 	"golang.org/x/net/html"
 	// "golang.org/x/net/html/atom"
 )
@@ -42,19 +41,13 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 	var p *GToken
 	var gTokens = make([]*GToken, 0)
 	var gDepths = make([]int, 0)
-	var gFilPosns = make([]*XM.FilePosition, 0)
+	var gFilPosns = make([]*XU.FilePosition, 0)
 	var NT html.NodeType // 1..3
 	var gotXmlProlog bool
-	var w io.Writer
+	var w io.Writer = pCPR.DiagDest
 
 	NL = pCPR.NodeSlice
 	DL = pCPR.NodeDepths
-
-	if pCPR.DumpDest != nil {
-		w = pCPR.DumpDest
-	} else {
-		w = ioutil.Discard // os.Stdout
-	}
 	L.L.Info("gtkn/html...")
 
 	// ================================

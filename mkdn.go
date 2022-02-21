@@ -32,7 +32,7 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 
 	NL = pCPR.NodeSlice
 	DL = pCPR.NodeDepths
-	L.L.Info("gtkn/mkdn...")
+	L.L.Info("Doing gtoken/mkdn...")
 
 	// ================================
 	//  FOR Every Node in the NodeList

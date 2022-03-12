@@ -9,6 +9,7 @@ import (
 	"io"
 	S "strings"
 	// "github.com/dimchansky/utfbom"
+	L "github.com/fbaube/mlog"
 )
 
 // GTokenization is defined solely for the convenience methods defined below.
@@ -31,7 +32,7 @@ func DeleteNils(inGTzn []*GToken) (outGTzn []*GToken) {
 // the input file, except perhaps for the treatment of all-whitespace CDATA.
 func DumpTo(GTzn []*GToken, w io.Writer) {
 	if nil == GTzn || nil == w {
-		println("gparse.gtokzn.DumpTo: NIL ?!")
+		L.L.Warning("gparse.gtokzn.DumpTo: NIL ?!")
 		return
 	}
 	// GTzn = GTzn.DeleteNils()

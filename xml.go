@@ -14,18 +14,22 @@ import (
 )
 
 // DoGTokens_xml is TBS.
+// .
 func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 	var XTs []xml.Token
 	var xt xml.Token
 	var p *GToken
 	var i int
-	var gTokens = make([]*GToken, 0)
-	var gDepths = make([]int, 0)
-	var gFilPosns = make([]*XU.FilePosition, 0)
 	var iDepth = 1 // current depth
 	var prDpth int // depth for printing
 	var canSkip bool
 	var w io.Writer = pCPR.DiagDest
+
+	// make slices: GTokens, their depths, and
+	// the source tokens they are made from
+	var gTokens = make([]*GToken, 0)
+	var gDepths = make([]int, 0)
+	var gFilPosns = make([]*XU.FilePosition, 0)
 
 	XTs = pCPR.NodeSlice
 	L.L.Info("gtkn/xml...")
@@ -47,9 +51,11 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 		// ???????????????????
 
 		case xml.StartElement:
-			// A StartElement has a Name (GName) and Attributes (GAtt's)
+			// A StartElement has a Name (GName)
+			// and Attributes (GAtt's)
 			p.TTType = "Elm"
-			// type xml.StartElement struct { Name Name ; Attr []Attr }
+			// type xml.StartElement struct {
+			//     Name Name ; Attr []Attr }
 			xTag := xml.CopyToken(xt).(xml.StartElement)
 			p.GName = GName(xTag.Name)
 			p.GName.FixNS()
@@ -59,7 +65,8 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 			}
 			for _, A := range xTag.Attr {
 				if A.Name.Space == XU.NS_XML {
-					// println("TODO check name.local: newgtoken/L36 xml:" + A.Name.Local)
+					// println("TODO check name.local:
+					// newgtoken/L36 xml:" + A.Name.Local)
 					A.Name.Space = "xml:"
 				}
 				a := GAtt(A)

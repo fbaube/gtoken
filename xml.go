@@ -6,23 +6,30 @@ import (
 	"io"
 	S "strings"
 
-	// "net/http"
-	// "github.com/yuin/goldmark/ast"
+	"github.com/fbaube/lwdx"
 	L "github.com/fbaube/mlog"
 	SU "github.com/fbaube/stringutils"
 	XU "github.com/fbaube/xmlutils"
 )
 
-// DoGTokens_xml is TBS.
+// DoGTokens_xml turns every [xml.Token] (from stdlib) into
+// a [GToken]. It's pretty simple because no tree building is
+// done yet. Basically it just copies in the Node type and the
+// Node's data, and sets the [TTType] field,
+//
+// [xml.Token] is an "any" interface holding a token types:
+// StartElement, EndElement,
+// CharData, Comment, ProcInst, Directive.
 // .
 func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
-	var XTs []xml.Token
-	var xt xml.Token
-	var p *GToken
+	var TL []xml.Token // Token List
+	var xTkn xml.Token
+
 	var i int
-	var iDepth = 1 // current depth
-	var prDpth int // depth for printing
 	var canSkip bool
+	var pTS *lwdx.TagSummary
+
+	var pGT *GToken
 	var w io.Writer = pCPR.DiagDest
 
 	// make slices: GTokens, their depths, and
@@ -31,122 +38,148 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 	var gDepths = make([]int, 0)
 	var gFilPosns = make([]*XU.FilePosition, 0)
 
-	XTs = pCPR.NodeSlice
-	L.L.Info("gtkn/xml...")
+	TL = pCPR.NodeSlice
+	L.L.Progress("gtkn/xml...")
 
-	// ==========================================
-	//  FOR Every XmlToken in the XmlTokens list
-	// ==========================================
-	for i, xt = range XTs {
-		p = new(GToken)
-		p.BaseToken = xt
+	var iDepth = 1 // current depth
+	var prDpth int // depth for printing
+	// =====================================
+	//  FOR Every XmlToken in the TokenList
+	// =====================================
+	for i, xTkn = range TL {
+		pGT = new(GToken)
+		pGT.BaseToken = xTkn
 		prDpth = iDepth
 		canSkip = false
 
-		switch xt.(type) {
+		// Now process based on the Token type
+		switch xTkn.(type) {
 
-		// ==========
-		//  DOCUMENT
-		// ==========
-		// ???????????????????
+		// =====================
+		//  case DOCUMENT: ??!!
+		// =====================
 
 		case xml.StartElement:
-			// A StartElement has a Name (GName)
-			// and Attributes (GAtt's)
-			p.TTType = "Elm"
+			pGT.TTType = "Elm"
+			// An StartElement has an xml.Name
+			// (same as a GName) and a slice
+			// of xml.Attributes (GAtt's)
 			// type xml.StartElement struct {
 			//     Name Name ; Attr []Attr }
-			xTag := xml.CopyToken(xt).(xml.StartElement)
-			p.GName = GName(xTag.Name)
-			p.GName.FixNS()
+			var xSE xml.StartElement
+			xSE = xml.CopyToken(xTkn).(xml.StartElement)
+			pGT.GName = GName(xSE.Name)
+			pGT.GName.FixNS()
 			// println("Elm:", pGT.GName.String())
-			if p.GName.Space == XU.NS_XML {
-				p.GName.Space = "xml:"
+			if pGT.GName.Space == XU.NS_XML {
+				pGT.GName.Space = "xml:"
 			}
-			for _, A := range xTag.Attr {
-				if A.Name.Space == XU.NS_XML {
+			for _, xA := range xSE.Attr {
+				if xA.Name.Space == XU.NS_XML {
 					// println("TODO check name.local:
-					// newgtoken/L36 xml:" + A.Name.Local)
-					A.Name.Space = "xml:"
+					// newgtoken xml:" + A.Name.Local)
+					xA.Name.Space = "xml:"
 				}
-				a := GAtt(A)
-				p.GAtts = append(p.GAtts, a)
+				gA := GAtt(xA)
+				pGT.GAtts = append(pGT.GAtts, gA)
 			}
-			p.Keyword = ""
-			p.Otherwords = ""
+			pGT.Keyword = ""
+			pGT.Otherwords = ""
 			// fmt.Printf("<!--Start-Tag--> %s \n", outGT.Echo())
 			iDepth++
+			var theTag string
+			theTag = xSE.Name.Local
+			pTS = lwdx.GetTagSummaryByTagName(theTag)
+			if pTS == nil {
+				L.L.Error("TAG NOT FOUND: " + theTag)
+				println("TAG NOT FOUND:", theTag)
+			} else {
+				L.L.Dbg("tag<%s> info: %+v", theTag, *pTS)
+				pGT.TagSummary = *pTS
+			}
 
 		case xml.EndElement:
 			// An EndElement has a Name (GName).
-			p.TTType = "end"
+			pGT.TTType = "end"
 			// type xml.EndElement struct { Name Name }
-			xTag := xml.CopyToken(xt).(xml.EndElement)
-			p.GName = GName(xTag.Name)
-			if p.GName.Space == XU.NS_XML {
-				p.GName.Space = "xml:"
+			var xEE xml.EndElement
+			xEE = xml.CopyToken(xTkn).(xml.EndElement)
+			pGT.GName = GName(xEE.Name)
+			if pGT.GName.Space == XU.NS_XML {
+				pGT.GName.Space = "xml:"
 			}
-			p.Keyword = ""
-			p.Otherwords = ""
+			pGT.Keyword = ""
+			pGT.Otherwords = ""
 			// fmt.Printf("<!--End-Tagnt--> %s \n", outGT.Echo())
 			iDepth--
 			canSkip = true
+			var theTag string
+			theTag = xEE.Name.Local
+			pTS = lwdx.GetTagSummaryByTagName(theTag)
+			if pTS == nil {
+				L.L.Error("TAG NOT FOUND: " + theTag)
+				println("TAG NOT FOUND:", theTag)
+			} else {
+				L.L.Dbg("tag<%s> info: %+v",
+					theTag, *pTS)
+				pGT.TagSummary = *pTS
+			}
+
+		case xml.Comment:
+			// type Comment []byte
+			pGT.TTType = "Cmt"
+			// pGT.Keyword remains ""
+			pGT.Otherwords = S.TrimSpace(string([]byte(xTkn.(xml.Comment))))
+			// fmt.Printf("<!-- Comment --> <!-- %s --> \n", outGT.Otherwords)
 
 		case xml.ProcInst:
-			p.TTType = "PrI"
+			pGT.TTType = "PrI"
 			// type xml.ProcInst struct { Target string ; Inst []byte }
-			xTag := xt.(xml.ProcInst)
-			p.Keyword = S.TrimSpace(xTag.Target)
-			p.Otherwords = S.TrimSpace(string(xTag.Inst))
+			xTknag := xTkn.(xml.ProcInst)
+			pGT.Keyword = S.TrimSpace(xTknag.Target)
+			pGT.Otherwords = S.TrimSpace(string(xTknag.Inst))
 			// fmt.Printf("<!--ProcInstr--> <?%s %s?> \n",
 			// 	outGT.Keyword, outGT.Otherwords)
 
 		case xml.Directive: // type Directive []byte
-			p.TTType = "Dir"
-			s := S.TrimSpace(string([]byte(xt.(xml.Directive))))
-			p.Keyword, p.Otherwords = SU.SplitOffFirstWord(s)
+			pGT.TTType = "Dir"
+			s := S.TrimSpace(string([]byte(xTkn.(xml.Directive))))
+			pGT.Keyword, pGT.Otherwords = SU.SplitOffFirstWord(s)
 			// fmt.Printf("<!--Directive--> <!%s %s> \n",
 			// 	outGT.Keyword, outGT.Otherwo rds)
 
 		case xml.CharData:
 			// type CharData []byte
-			p.TTType = "ChD"
-			bb := []byte(xml.CopyToken(xt).(xml.CharData))
+			pGT.TTType = "ChD"
+			bb := []byte(xml.CopyToken(xTkn).(xml.CharData))
 			s := S.TrimSpace(string(bb))
 			// pGT.Keyword remains ""
-			p.Otherwords = s
+			pGT.Otherwords = s
 			if s == "" {
 				canSkip = true
-				p.Depth = prDpth
+				pGT.Depth = prDpth
 				gTokens = append(gTokens, nil)
 				gDepths = append(gDepths, prDpth)
-				gFilPosns = append(gFilPosns, &p.FilePosition)
+				gFilPosns = append(gFilPosns, &pGT.FilePosition)
 				continue
 				L.L.Dbg("Got an all-WS PCDATA")
 				// DO NOTHING
 				// NOTE This may do weird things to elements
-				// that have text content models.
+				// that have texTkn content models.
 			}
 			// } else {
 			// fmt.Printf("<!--Char-Data--> %s \n", outGT.Otherwords)
 
-		case xml.Comment:
-			// type Comment []byte
-			p.TTType = "Cmt"
-			// pGT.Keyword remains ""
-			p.Otherwords = S.TrimSpace(string([]byte(xt.(xml.Comment))))
-			// fmt.Printf("<!-- Comment --> <!-- %s --> \n", outGT.Otherwords)
-
 		default:
-			p.TTType = "ERR"
-			L.L.Error("Unrecognized xml.Token type<%T> for: %+v", xt, xt)
+			pGT.TTType = "ERR"
+			L.L.Error("Unrecognized xml.Token type<%T> for: %+v", xTkn, xTkn)
 			// continue
 		}
 
-		p.Depth = prDpth
-		gTokens = append(gTokens, p)
+		pGT.Depth = prDpth
+		gTokens = append(gTokens, pGT)
 		gDepths = append(gDepths, prDpth)
-		gFilPosns = append(gFilPosns, &p.FilePosition)
+		gFilPosns = append(gFilPosns, &pGT.FilePosition)
 
 		// if p != nil { // Useless test ?
 		sCS := ""
@@ -154,12 +187,12 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 			sCS = "(skip)" // "(canSkip?)"
 		} // else {
 		var quote = ""
-		if p.TTType == "ChD" {
+		if pGT.TTType == "ChD" {
 			quote = "\""
 		}
-		if p.TTType != "end" {
+		if pGT.TTType != "end" {
 			fmt.Fprintf(w, "[%s] %s (%s) %s%s%s %s \n",
-				pCPR.AsString(i), S.Repeat("  ", prDpth), p.TTType, quote, p.Echo(), quote, sCS)
+				pCPR.AsString(i), S.Repeat("  ", prDpth), pGT.TTType, quote, pGT.Echo(), quote, sCS)
 		}
 		// }
 	}

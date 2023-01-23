@@ -8,6 +8,7 @@ import (
 	"encoding/xml"
 	"io"
 
+	"github.com/fbaube/lwdx"
 	L "github.com/fbaube/mlog"
 	XU "github.com/fbaube/xmlutils"
 	"github.com/yuin/goldmark/ast"
@@ -27,7 +28,6 @@ import (
 // - whatever additional stuff is available for Markdown tokens
 //
 // NOTE XML Directives are later "normalized", but that's another story.
-//
 type GToken struct {
 	// Keep the wrapped-original token around, just in case.
 	// Note that this `xml.Token` (or the entire `GToken`) might be erased in
@@ -36,6 +36,7 @@ type GToken struct {
 	Depth     int
 	XU.FilePosition
 	IsBlock, IsInline bool
+	lwdx.TagSummary
 	// GTagTokType enumerates the types of struct `GToken` and also the types of
 	// struct `GTag`, which are a strict superset. Therefore the two structs use
 	// a shared "type" enumeration. <br/>

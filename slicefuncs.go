@@ -42,7 +42,7 @@ func DumpTo(GTzn []*GToken, w io.Writer) {
 		if nil == pGT {
 			continue
 		}
-		if pGT.TTType == "end" {
+		if pGT.TTType == TT_type_ENDLM {
 			continue
 		}
 		fmt.Fprintf(w, "<!--%s--> %s%s \n",
@@ -56,9 +56,8 @@ func HasDoctype(GTs []*GToken) (bool, string) {
 	}
 	var pGT *GToken
 	for _, pGT = range GTs {
-		switch pGT.TTType {
-		case "Dir":
-			return true, pGT.Otherwords
+		if pGT.TTType == TT_type_DRCTV {
+			return true, pGT.Datastring
 		}
 	}
 	return false, ""
@@ -70,7 +69,7 @@ func GetFirstByTag(gTkzn []*GToken, s string) *GToken {
 		return nil
 	}
 	for _, p := range gTkzn {
-		if p.GName.Local == s && p.TTType == "Elm" {
+		if p.GName.Local == s && p.TTType == TT_type_ELMNT {
 			return p
 		}
 	}
@@ -87,7 +86,7 @@ func GetAllByTag(gTkzn []*GToken, s string) []*GToken {
 	var ret []*GToken
 	ret = make([]*GToken, 0)
 	for _, p := range gTkzn {
-		if p.GName.Local == s && p.TTType == "Elm" {
+		if p.GName.Local == s && p.TTType == TT_type_ELMNT {
 			// fmt.Printf("found a match [%d] %s (NS:%s)\n", i, p.GName.Local, p.GName.Space)
 			ret = append(ret, p)
 		}

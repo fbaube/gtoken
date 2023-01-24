@@ -62,7 +62,10 @@ func DataOfHtmlNode(n *html.Node) string {
 // "a&lt;b". For element nodes, DataAtom is the atom for Data,
 // or zero if Data is not a known tag name.
 //
-// .
+//	type Attribute struct {
+//	     Namespace, Key, Val string }
+//
+// ..
 func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 	var NL []*html.Node //  Node List
 	var pNode *html.Node
@@ -71,7 +74,7 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 	var NT html.NodeType // 1..3
 	var gotXmlProlog bool
 
-	var pGT *GToken
+	var pGTkn *GToken
 	var w io.Writer = pCPR.DiagDest
 
 	// make slices: GTokens & their depths & the file
@@ -89,9 +92,9 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 	//  FOR Every Node in the NodeList
 	// ================================
 	for i, pNode = range NL {
-		pGT = new(GToken)
-		pGT.BaseToken = pNode
-		pGT.Depth = DL[i]
+		pGTkn = new(GToken)
+		pGTkn.BaseToken = pNode
+		pGTkn.Depth = DL[i]
 		NT = pNode.Type
 		theData := DataOfHtmlNode(pNode)
 
@@ -99,14 +102,14 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 		// set the GToken to nil and bail out
 		if theData == "" && NT == html.TextNode { // NT != html.DocumentNode {
 			gTokens = append(gTokens, nil)
-			gDepths = append(gDepths, pGT.Depth)
-			gFilPosns = append(gFilPosns, &pGT.FilePosition)
+			gDepths = append(gDepths, pGTkn.Depth)
+			gFilPosns = append(gFilPosns, &pGTkn.FilePosition)
 			continue
 		}
 
 		// Prep: Start building a debug/description string
 		s := fmt.Sprintf("[%s] %s (%s)  ", pCPR.AsString(i),
-			S.Repeat("  ", pGT.Depth-1), PU.NTstring(NT)) // %d,NT)
+			S.Repeat("  ", pGTkn.Depth-1), PU.NTstring(NT))
 
 		// Prep: Handle XML prefix
 		if NT == html.CommentNode &&
@@ -121,10 +124,10 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 		} else {
 			// else note if there is unexpected data
 			if NT != 3 && NT != 1 {
-				// neither StartElement nor ChD (Text)
+				// neither StartElement nor Text
 				s += "data"
 			}
-			if NT == 1 { // ChD (Text)
+			if NT == 1 { // Text
 				s += fmt.Sprintf("\"%s\"", theData)
 			} else {
 				s += fmt.Sprintf("<%s>", theData)
@@ -145,21 +148,37 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 		//  DOCUMENT
 		// ==========
 		case html.DocumentNode:
-			pGT.TTType = "Doc"
+			pGTkn.TTType = TT_type_DOCMT
 
 		case html.ErrorNode:
-			pGT.TTType = "Err"
+			pGTkn.TTType = TT_type_ERROR
 			L.L.Warning("Got HTML ERR node")
 
 		case html.TextNode:
-			pGT.TTType = "ChD"
+			pGTkn.TTType = TT_type_CDATA
 			// The text of the Node
-			pGT.Otherwords = theData
+			pGTkn.Datastring = theData
 
 		case html.ElementNode:
-			pGT.TTType = "Elm"
+			pGTkn.TTType = TT_type_ELMNT
+			pGTkn.GName.Local = theData
+
+			for _, xA := range pNode.Attr {
+				// gA := GAtt(xA)
+				pGAtt := new(GAtt)
+				// GAtt is just xml.Attr
+				// type Attr struct {
+				//      Name  Name
+				//      Value string }
+				// type Name struct {
+				//      Space, Local string }
+				pGAtt.Name.Local = xA.Key
+				pGAtt.Name.Space = xA.Namespace
+				pGAtt.Value = xA.Val
+				pGTkn.GAtts = append(pGTkn.GAtts, *pGAtt)
+			}
+
 			var pTS *lwdx.TagSummary
-			pGT.GName.Local = theData
 			pTS = lwdx.GetTagSummaryByTagName(theData)
 			if pTS == nil {
 				L.L.Error("TAG NOT FOUND: " + theData)
@@ -167,37 +186,47 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 			} else {
 				L.L.Dbg("tag<%s> info: %+v",
 					theData, *pTS)
-				pGT.TagSummary = *pTS
+				pGTkn.TagSummary = *pTS
 			}
 
 		case html.CommentNode:
-			pGT.TTType = "Cmt"
-			pGT.Otherwords = theData
+			pGTkn.TTType = TT_type_COMNT
+			pGTkn.Datastring = theData
+
 			if gotXmlProlog {
-				pGT.TTType = "PrI"
+				pGTkn.TTType = TT_type_PINST
+				println("XML prelude processed as Comment!")
 			}
 
 		case html.DoctypeNode:
-			pGT.TTType = "Dir"
-			pGT.Otherwords = theData
+			pGTkn.TTType = TT_type_DRCTV
+			pGTkn.Datastring = theData
 			for _, a := range pNode.Attr {
 				// fmt.Printf("\t Attr: %+v \n", a)
 				L.L.Dbg("\t Attr: NS<%s> Key<%s> Val: %s", a.Namespace, a.Key, a.Val)
 			}
-			/*
-				case html.RawNode:
-				  println("HTML RAW node")
-				case html.Directive: // type Directive []byte
-					pGT.TTType = "Dir"
-					s := S.TrimSpace(string([]byte(xt.(xml.Directive))))
-					pGT.Keyword, pGT.Otherwords = SU.SplitOffFirstWord(s)
-			*/
+		/*
+			                https://pkg.go.dev/golang.org/x/net/html#NodeType
+			                RawNode nodes are not returned by the parser, but
+			                can be part of the Node tree passed to func Render
+			                to insert raw HTML (without escaping).
+			                If so, this package makes no guarantee that the
+			                rendered HTML is secure (from e.g. Cross Site
+			                Scripting attacks) or well-formed.
+
+					case html.RawNode:
+					  println("HTML RAW node")
+					case html.Directive: // type Directive []byte
+						pGTkn.TTType = TT_type_DRCTV
+						s := S.TrimSpace(string([]byte(xt.(xml.Directive))))
+						pGTkn.Keyword, pGTkn.Datastring = SU.SplitOffFirstWord(s)
+		*/
 		default:
 			L.L.Error("Got unknown HTML NT: %+v", NT)
 		}
-		gTokens = append(gTokens, pGT)
-		gDepths = append(gDepths, pGT.Depth)
-		gFilPosns = append(gFilPosns, &pGT.FilePosition)
+		gTokens = append(gTokens, pGTkn)
+		gDepths = append(gDepths, pGTkn.Depth)
+		gFilPosns = append(gFilPosns, &pGTkn.FilePosition)
 
 		fmt.Fprintf(w, s+"\n")
 	}
@@ -210,51 +239,18 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 // =====================================================================
 
 /*
+THIS seems to be stuff from elsewhere that is saved
+here to maybe provide an outline of what to do.
+
 		switch NT { // ast.NodeKind
-			/*
-			    Type      NodeType
-							ErrorNode NodeType = iota
-    					TextNode
-    					DocumentNode
-    					ElementNode
-    					CommentNode
-    					DoctypeNode
-			    DataAtom  atom.Atom
-							integer codes (a.k.a. atoms) for a fixed set of common HTML
-							strings: tag names and attribute keys like "p" and "id".
-			    Data      string
-			    Namespace string
-			    Attr      []Attribute
-			* /
 
-/*
-
-					case html.EndElement:
-						// An EndElement has a Name (GName).
-						pGT.TTType = "end"
-						// type xml.EndElement struct { Name Name }
-						xTag := xml.CopyToken(xt).(xml.EndElement)
-						pGT.GName = GName(xTag.Name)
-						if pGT.GName.Space == NS_XML {
-							pGT.GName.Space = "xml:"
-						}
-						pGT.Keyword = ""
-						pGT.Otherwords = ""
-						// fmt.Printf("<!--End-Tagnt--> %s \n", outGT.Echo())
-						gTokens = append(gTokens, p)
-						continue
-
-
-* /
-
-/*
 				case ast.KindAutoLink:
 					// https://github.github.com/gfm/#autolinks
 					// Autolinks are absolute URIs and email addresses btwn < and >.
 					// They are parsed as links, with the link target reused as the link label.
-					pGT.NodeKind = "KindAutoLink"
-					pGT.DitaTag = "xref"
-					pGT.HtmlTag = "a@href"
+					pGTkn.NodeKind = "KindAutoLink"
+					pGTkn.DitaTag = "xref"
+					pGTkn.HtmlTag = "a@href"
 					n2 := node.(*ast.AutoLink)
 					fmt.Printf("AutoLink: %+v \n", *n2)
 					// type AutoLink struct {
@@ -277,9 +273,9 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 					// w.Write(util.EscapeHTML(label))
 					// w.WriteString(`</a>`)
 				case ast.KindBlockquote:
-					pGT.NodeKind = "KindBlockquote"
-					pGT.DitaTag = "?blockquote"
-					pGT.HtmlTag = "blockquote"
+					pGTkn.NodeKind = "KindBlockquote"
+					pGTkn.DitaTag = "?blockquote"
+					pGTkn.HtmlTag = "blockquote"
 					n2 := node.(*ast.Blockquote)
 					fmt.Printf("Blockquote: %+v \n", *n2)
 					// type Blockquote struct {
@@ -287,9 +283,9 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 					// }
 					// w.WriteString("<blockquote>\n")
 				case ast.KindCodeBlock:
-					pGT.NodeKind = "KindCodeBlock"
-					pGT.DitaTag = "?pre+?code"
-					pGT.HtmlTag = "pre+code"
+					pGTkn.NodeKind = "KindCodeBlock"
+					pGTkn.DitaTag = "?pre+?code"
+					pGTkn.HtmlTag = "pre+code"
 					n2 := node.(*ast.CodeBlock)
 					fmt.Printf("CodeBlock: %+v \n", *n2)
 					// type CodeBlock struct {
@@ -298,9 +294,9 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 					// w.WriteString("<pre><code>")
 					// r.writeLines(w, source, n)
 				case ast.KindCodeSpan:
-					pGT.NodeKind = "KindCodeSpan"
-					pGT.DitaTag = "?code"
-					pGT.HtmlTag = "code"
+					pGTkn.NodeKind = "KindCodeSpan"
+					pGTkn.DitaTag = "?code"
+					pGTkn.HtmlTag = "code"
 					// // n2 := node.(*ast.CodeSpan)
 					// // sDump = litter.Sdump(*n2)
 					// type CodeSpan struct {
@@ -320,16 +316,16 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 				case ast.KindDocument:
 					// Note that metadata comes btwn this
 					// start-of-document tag and the content ("body").
-					pGT.NodeKind = "KindDocument"
-					pGT.DitaTag = "topic"
-					pGT.HtmlTag = "html"
+					pGTkn.NodeKind = "KindDocument"
+					pGTkn.DitaTag = "topic"
+					pGTkn.HtmlTag = "html"
 				case ast.KindEmphasis:
-					pGT.NodeKind = "KindEmphasis"
+					pGTkn.NodeKind = "KindEmphasis"
 					// iLevel 2 | iLevel 1
-					pGT.DitaTag = "b|i"
-					pGT.HtmlTag = "strong|em"
+					pGTkn.DitaTag = "b|i"
+					pGTkn.HtmlTag = "strong|em"
 					n2 := node.(*ast.Emphasis)
-					pGT.NodeNumeric = n2.Level
+					pGTkn.NodeNumeric = n2.Level
 					fmt.Printf("Emphasis: %+v \n", *n2)
 					// type Emphasis struct {
 					//   BaseInline
@@ -345,9 +341,9 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 					//   w.WriteString(tag)
 					//   w.WriteByte('>')
 				case ast.KindFencedCodeBlock:
-					pGT.NodeKind = "KindFencedCodeBlock"
-					pGT.DitaTag = "?code"
-					pGT.HtmlTag = "code"
+					pGTkn.NodeKind = "KindFencedCodeBlock"
+					pGTkn.DitaTag = "?code"
+					pGTkn.HtmlTag = "code"
 					n2 := node.(*ast.FencedCodeBlock)
 					fmt.Printf("FencedCodeBlock: %+v \n", *n2)
 					// type FencedCodeBlock struct {
@@ -362,9 +358,9 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 					//   w.WriteString(" class=\"language-")
 					//   r.Writer.Write(w, language)
 				case ast.KindHTMLBlock:
-					pGT.NodeKind = "KindHTMLBlock"
-					pGT.DitaTag = "?htmlblock"
-					pGT.HtmlTag = "?htmlblock"
+					pGTkn.NodeKind = "KindHTMLBlock"
+					pGTkn.DitaTag = "?htmlblock"
+					pGTkn.HtmlTag = "?htmlblock"
 					n2 := node.(*ast.HTMLBlock)
 					fmt.Printf("HTMLBlock: %+v \n", *n2)
 					// type HTMLBlock struct {
@@ -383,11 +379,11 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 					// } else {
 					//   w.WriteString("<!-- raw HTML omitted -->\n")
 				case ast.KindHeading:
-					pGT.NodeKind = "KindHeading"
-					pGT.DitaTag = "?"
-					pGT.HtmlTag = "h%d"
+					pGTkn.NodeKind = "KindHeading"
+					pGTkn.DitaTag = "?"
+					pGTkn.HtmlTag = "h%d"
 					n2 := node.(*ast.Heading)
-					pGT.NodeNumeric = n2.Level
+					pGTkn.NodeNumeric = n2.Level
 					fmt.Printf("Heading: %+v \n", *n2)
 					// type Heading struct {
 					//   BaseBlock
@@ -398,9 +394,9 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 				// w.WriteString("<h")
 				// w.WriteByte("0123456"[node.Level])
 				case ast.KindImage:
-					pGT.NodeKind = "KindImage"
-					pGT.DitaTag = "image"
-					pGT.HtmlTag = "img"
+					pGTkn.NodeKind = "KindImage"
+					pGTkn.DitaTag = "image"
+					pGTkn.HtmlTag = "img"
 					n2 := node.(*ast.Image)
 					fmt.Printf("Image: %+v \n", *n2)
 					// type Image struct {
@@ -423,9 +419,9 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 					// } else {
 					//   w.WriteString(">")
 				case ast.KindLink:
-					pGT.NodeKind = "KindLink"
-					pGT.DitaTag = "xref"
-					pGT.HtmlTag = "a@href"
+					pGTkn.NodeKind = "KindLink"
+					pGTkn.DitaTag = "xref"
+					pGTkn.HtmlTag = "a@href"
 					n2 := node.(*ast.Link)
 					fmt.Printf("Link: %+v \n", *n2)
 					// type Link struct {
@@ -443,14 +439,14 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 					// }
 					// w.WriteByte('>')
 				case ast.KindList:
-					pGT.NodeKind = "KindList"
+					pGTkn.NodeKind = "KindList"
 					n2 := node.(*ast.List)
 					if n2.IsOrdered() {
-						pGT.DitaTag = "ol"
-						pGT.HtmlTag = "ol"
+						pGTkn.DitaTag = "ol"
+						pGTkn.HtmlTag = "ol"
 					} else {
-						pGT.DitaTag = "ul"
-						pGT.HtmlTag = "ul"
+						pGTkn.DitaTag = "ul"
+						pGTkn.HtmlTag = "ul"
 					}
 					fmt.Printf("List: %+v \n", *n2)
 					// type List struct {
@@ -475,10 +471,10 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 					// } else {
 					//   w.WriteString(">\n")
 				case ast.KindListItem:
-					pGT.NodeKind = "KindListItem"
+					pGTkn.NodeKind = "KindListItem"
 					n2 := node.(*ast.ListItem)
-					pGT.DitaTag = "li"
-					pGT.HtmlTag = "li"
+					pGTkn.DitaTag = "li"
+					pGTkn.HtmlTag = "li"
 					fmt.Printf("ListItem: %+v \n", *n2)
 					// type ListItem struct {
 					//   BaseBlock
@@ -491,9 +487,9 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 					//   if _, ok := fc.(*ast.TextBlock); !ok {
 					//     w.WriteByte('\n')
 				case ast.KindParagraph:
-					pGT.NodeKind = "KindParagraph"
-					pGT.DitaTag = "p"
-					pGT.HtmlTag = "p"
+					pGTkn.NodeKind = "KindParagraph"
+					pGTkn.DitaTag = "p"
+					pGTkn.HtmlTag = "p"
 					// // n2 := node.(*ast.Paragraph)
 					// // sDump = litter.Sdump(*n2)
 					// type Paragraph struct {
@@ -501,9 +497,9 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 					// }
 					// w.WriteString("<p>")
 				case ast.KindRawHTML:
-					pGT.NodeKind = "KindRawHTML"
-					pGT.DitaTag = "?rawhtml"
-					pGT.HtmlTag = "?rawhtml"
+					pGTkn.NodeKind = "KindRawHTML"
+					pGTkn.DitaTag = "?rawhtml"
+					pGTkn.HtmlTag = "?rawhtml"
 					n2 := node.(*ast.RawHTML)
 					fmt.Printf("RawHTML: %+v \n", *n2)
 					// type RawHTML struct {
@@ -518,10 +514,10 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 					//   w.Write(segment.Value(source))
 					// }
 				case ast.KindText:
-					pGT.NodeKind = "KindText"
+					pGTkn.NodeKind = "KindText"
 					n2 := node.(*ast.Text)
-					pGT.DitaTag = "?text"
-					pGT.HtmlTag = "?text"
+					pGTkn.DitaTag = "?text"
+					pGTkn.HtmlTag = "?text"
 					fmt.Printf("Text: %+v \n", *n2)
 					// // sDump = litter.Sdump(*n2)
 					// type Text struct {
@@ -531,8 +527,8 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 					//   flags uint8
 					// }
 					segment := n2.Segment
-					// pGT.NodeText = fmt.Sprintf("KindText:\n | %s", string(TheReader.Value(segment)))
-					pGT.NodeText = /* fmt.Sprintf("KindText:\n | %s", * / string(pCPR.Reader.Value(segment)) //)
+					// pGTkn.NodeText = fmt.Sprintf("KindText:\n | %s", string(TheReader.Value(segment)))
+					pGTkn.NodeText = /* fmt.Sprintf("KindText:\n | %s", * / string(pCPR.Reader.Value(segment)) //)
 					/*
 						if node.IsRaw() {
 							r.Writer.RawWrite(w, segment.Value(TheSource))
@@ -550,9 +546,9 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 						}
 					* /
 				case ast.KindTextBlock:
-					pGT.NodeKind = "KindTextBlock"
-					pGT.DitaTag = "?textblock"
-					pGT.HtmlTag = "?textblock"
+					pGTkn.NodeKind = "KindTextBlock"
+					pGTkn.DitaTag = "?textblock"
+					pGTkn.HtmlTag = "?textblock"
 					// // n2 := node.(*ast.TextBlock)
 					// // sDump = litter.Sdump(*n2)
 					// type TextBlock struct {
@@ -561,9 +557,9 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 					// if _, ok := node.NextSibling().(ast.Node); ok && node.FirstChild() != nil {
 					//   w.WriteByte('\n')
 				case ast.KindThematicBreak:
-					pGT.NodeKind = "KindThematicBreak"
-					pGT.DitaTag = "hr"
-					pGT.HtmlTag = "hr"
+					pGTkn.NodeKind = "KindThematicBreak"
+					pGTkn.DitaTag = "hr"
+					pGTkn.HtmlTag = "hr"
 					// type ThemanticBreak struct {
 					//   BaseBlock
 					// }
@@ -572,9 +568,9 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 					// } else {
 					//   w.WriteString("<hr>\n")
 				default:
-					pGT.NodeKind = "KindUNK"
-					pGT.DitaTag = "UNK"
-					pGT.HtmlTag = "UNK"
+					pGTkn.NodeKind = "KindUNK"
+					pGTkn.DitaTag = "UNK"
+					pGTkn.HtmlTag = "UNK"
 				}
 		}
 	return gTokens, nil

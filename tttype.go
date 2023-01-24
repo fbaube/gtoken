@@ -6,6 +6,8 @@ package gtoken
 // DIRECTIVE subtypes, IDs, and ENUM.
 type TTType string
 
+/*
+
 // GTagTokTypes are [xml.Decoder] types, XML directives, ID/REF, ENUM.
 // NOTE: These strings are used in comments thruout this package.
 // .
@@ -32,9 +34,30 @@ var TTTypes = []TTType{
 	"ENUM",
 }
 
+*/
+
 const (
-	TT_type_ERR TTType = "ERR"
-	TT_type_DOC        = "Doc"
+	TT_type_ERROR TTType = "ERR" // ERROR
+
+	TT_type_DOCMT = "Docmt"
+	TT_type_ELMNT = "Elmnt"
+	TT_type_ENDLM = "endlm"
+	TT_type_SCLSG = "SClsg"
+	TT_type_CDATA = "CData"
+	TT_type_PINST = "PInst"
+	TT_type_COMNT = "Comnt"
+	TT_type_DRCTV = "Drctv"
+	// The following are actually DIRECTIVE SUBTYPES, but they
+	// are put in this list so that they can be assigned freely.
+	TT_type_Doctype  = "DOCTYPE"
+	TT_type_Element  = "ELEMENT"
+	TT_type_Attlist  = "ATTLIST"
+	TT_type_Entity   = "ENTITTY"
+	TT_type_Notation = "NOTAT:N"
+	// The following are TBD.
+	TT_type_ID    = "ID"
+	TT_type_IDREF = "IDREF"
+	TT_type_Enum  = "ENUM"
 )
 
 /*
@@ -64,21 +87,21 @@ var ttTypes = []TTType{
 
 func (TT TTType) LongForm() string {
 	switch TT {
-	case "Elm":
+	case TT_type_ELMNT:
 		return "Start-Tag"
-	case "end":
+	case TT_type_ENDLM:
 		return "End'g-Tag"
-	case "ChD":
+	case TT_type_CDATA:
 		return "Char-Data"
-	case "Cmt":
+	case TT_type_COMNT:
 		return "_Comment_"
-	case "PrI":
+	case TT_type_PINST:
 		return "ProcInstr"
-	case "Dir":
+	case TT_type_DRCTV:
 		return "Directive"
-	case "SC/":
+	case TT_type_SCLSG:
 		return "SelfClose"
-	case "Doc":
+	case TT_type_DOCMT:
 		return "DocuStart"
 	}
 	return string(TT)

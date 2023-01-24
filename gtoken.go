@@ -16,43 +16,64 @@ import (
 )
 
 // GToken is meant to simplify & unify tokenisation across LwDITA's three
-// supported input formats: XDITA XML, HDITA HTML5, and MD-XP Markdown.
+// supported input formats: XDITA XML, HDITA HTML5, and MDITA-XP Markdown.
 // It also serves to represent all the various kinds of XML Directives,
 // including DTDs(!).
 //
 // To do this, the tokens produced by each parsing API are reduced to
 // their essentials:
-// - token type (defined by the enumeration `GTagTokType`)
-// - token text (tag name or non-tag text content)
-// - tag attributes
-// - whatever additional stuff is available for Markdown tokens
+//   - tag/token type (defined by the enumeration [GTagTokType],
+//     named TT_type_*, values are strings))
+//   - tag name (iff a markup element; is stored in GName, incl. NS)
+//   - token text (non-tag text content)
+//   - tag attributes
+//   - whatever additional stuff is available for Markdown tokens
 //
-// NOTE XML Directives are later "normalized", but that's another story.
+// NOTE that XML Directives are later "normalized", but that's another story.
+// .
 type GToken struct {
 	// Keep the wrapped-original token around, just in case.
-	// Note that this `xml.Token` (or the entire `GToken`) might be erased in
-	// later processing, if (for example) it is a CDATA that has only whitespace.
+	// Note that a [xml.Token] (or an entire [GToken]) might
+	// be overwritten/erased in later processing, if (for
+	// example) it is a CDATA that has only whitespace.
 	BaseToken interface{}
 	Depth     int
 	XU.FilePosition
+
+	// TagOrPrcsrDrctv (ex-"Keyword") is for holding
+	// (a) a simple string of the tag of an element
+	//     (leaving out the namespace), or
+	// (b) the processor name (i.e the first string)
+	//     in an XML Processing Instruction (PI), or
+	// (c) an XML directive ("doctype", "element",
+	//     "attlist", "entity", etc.)
+	TagOrPrcsrDrctv string
+	// Keyword string
+
+	// Datastring (ex-"Otherwords") is for all *except*
+	// TT_type_ELMNT and TT_type_ENDLM
+	Datastring string
+	// Otherwords string
+
+	// GTagTokType enumerates the types of struct [GToken] and also
+	// the types of struct [GTag], which are a strict superset.
+	// Therefore the two structs use a shared "type" enumeration,
+	// of type TTType.
+	//
+	// NOTE that TT_type_ENDLM (`EndElement`) *might* be OK for a
+	// [GToken.Type] (this is a TBD) but it certainly is not OK for
+	// a [GTag.Type], cos the existence of a matching `EndElement`
+	// for every `StartElement` should be assumed (but need not
+	// actually be present when depth info is available) in a
+	// valid [gtree.GTree].
+	TTType
+	// GName is for XML TT_type_ELMNT and TT_type_ENDLM *only*
+	GName
+	// GAtts is for XML TT_type_ELMNT *only*, and HTML, and (finagled) MKDN
+	GAtts
+
 	IsBlock, IsInline bool
 	lwdx.TagSummary
-	// GTagTokType enumerates the types of struct `GToken` and also the types of
-	// struct `GTag`, which are a strict superset. Therefore the two structs use
-	// a shared "type" enumeration. <br/>
-	// NOTE "end" (`EndElement`) is maybe (but probably not) OK for a `GToken.Type`
-	// but certainly not for a `GTag.Type`, cos the existence of a matching
-	// `EndElement` for every `StartElement` should be assumed (but need not
-	// actually be present when depth info is available) in a valid `GTree`.
-	TTType
-	// GName is for XML "Elm" & "end" *only* // GElmName? GTagName?
-	GName
-	// GAtts is for XML "Elm" *only*, and HTML, and (with some finagling) MKDN
-	GAtts
-	// Keyword is for XML ProcInst "PrI" & Directive "Dir", *only*
-	Keyword string
-	// Otherwords is for all *except* "Elm" and "end"
-	Otherwords string
 
 	NodeKind, DitaTag, HtmlTag, NodeText string
 	NodeNumeric                          int
@@ -81,33 +102,34 @@ func (T GToken) Echo() string {
 	// var s string
 	switch T.TTType {
 
-	case "Doc":
+	case TT_type_DOCMT:
 		return "<-- \"Doc\" DOCUMENT START -->"
 
-	case "Elm":
+	case TT_type_ELMNT:
 		return "<" + T.GName.Echo() + T.GAtts.Echo() + ">"
 
-	case "end":
+	case TT_type_ENDLM:
 		return "</" + T.GName.Echo() + ">"
 
-	case "SC/":
+	case TT_type_SCLSG:
 		L.L.Error("Bogus token <SC/>")
 		return "ERR"
 
-	case "ChD":
-		return T.Otherwords
+	case TT_type_CDATA:
+		return T.Datastring
 
-	case "PrI":
-		return "<?" + T.Keyword + " " + T.Otherwords + "?>"
+	case TT_type_PINST:
+		return "<?" + T.TagOrPrcsrDrctv + " " + T.Datastring + "?>"
 
-	case "Cmt":
-		return "<!-- " + T.Otherwords + " -->"
+	case TT_type_COMNT:
+		return "<!-- " + T.Datastring + " -->"
 
-	case "Dir": // Directive subtypes, after Directives have been normalized
-		return "<!" + T.Keyword + " " + T.Otherwords + ">"
+	case TT_type_DRCTV: // Directive subtypes,
+		// after Directives have been normalized
+		return "<!" + T.TagOrPrcsrDrctv + " " + T.Datastring + ">"
 
 	default:
-		return "UNK<" + T.Keyword + "> // " + T.Otherwords
+		return "UNK<" + T.TagOrPrcsrDrctv + "> // " + T.Datastring
 	}
 	return "<!-- ?! GToken.ERR ?! -->"
 }
@@ -121,7 +143,7 @@ func (T GToken) EchoTo(w io.Writer) {
 func (T GToken) String() string {
 	// return ("<!--" + T.TTType.LongForm() + "-->  " + T.Echo())
 	var s3 = string(T.TTType)
-	if s3 == "end" {
+	if s3 == TT_type_ENDLM {
 		s3 = " / "
 	}
 	return ("[" + s3 + "] " + T.Echo())

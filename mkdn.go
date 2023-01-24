@@ -15,7 +15,6 @@ import (
 // It's pretty simple, because no tree building is done yet. However it
 // does merge text tokens into their preceding tokens, which leaves some
 // nils in the list of tokens.
-//
 func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 	var NL []ast.Node
 	var DL []int
@@ -101,7 +100,7 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			p.NodeKind = "KindDocument"
 			p.DitaTag = "topic"
 			p.HtmlTag = "html"
-			p.TTType = "Doc"
+			p.TTType = TT_type_DOCMT
 			fmt.Fprintln(w, " ")
 
 		case ast.KindHeading:
@@ -110,7 +109,7 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			p.HtmlTag = "h%d"
 			n2 := n.(*ast.Heading)
 			p.NodeNumeric = n2.Level
-			p.TTType = "Elm"
+			p.TTType = TT_type_ELMNT
 			p.GName.Local = fmt.Sprintf("h%d", n2.Level)
 			fmt.Fprintf(w, "<h%d> \n", n2.Level)
 			// type Heading struct {
@@ -348,7 +347,7 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			p.NodeKind = "KindParagraph"
 			p.DitaTag = "p"
 			p.HtmlTag = "p"
-			p.TTType = "Elm"
+			p.TTType = TT_type_ELMNT
 			p.GName.Local = "p"
 			fmt.Fprintf(w, "<p> \n")
 			// // n2 := n.(*ast.Paragraph)
@@ -403,7 +402,7 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 				if prevGT == nil {
 					fmt.Fprintf(w, "Can't merge text into prev nil \n")
 				} else {
-					prevGT.Otherwords += theText
+					prevGT.Datastring += theText
 					prevGT.NodeText += theText
 					fmt.Fprintf(w, "(merged!) \n")
 					gTokens = append(gTokens, nil)
@@ -415,8 +414,8 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			p.NodeText = theText
 			// p.NodeText = fmt.Sprintf("KindText:\n | %s", string(TheReader.Value(segment)))
 			// p.NodeText = /* fmt.Sprintf("KindText:\n | %s", */ string(pCPR.Reader.Value(segment)) //)
-			p.TTType = "ChD"
-			p.Otherwords = theText
+			p.TTType = TT_type_CDATA
+			p.Datastring = theText
 			fmt.Fprintf(w, "Text<%s> \n", p.NodeText)
 			/*
 				if n.IsRaw() {

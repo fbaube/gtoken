@@ -18,8 +18,8 @@ import (
 // Node's data, and sets the [TTType] field,
 //
 // [xml.Token] is an "any" interface holding a token types:
-// StartElement, EndElement,
-// CharData, Comment, ProcInst, Directive.
+// StartElement, EndElement, CharData, Comment, ProcInst, Directive.
+// Note that these types are a subset of [gtoken.TTType].
 // .
 func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 	var TL []xml.Token // Token List
@@ -27,9 +27,8 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 
 	var i int
 	var canSkip bool
-	var pTS *lwdx.TagSummary
 
-	var pGT *GToken
+	var pGTkn *GToken
 	var w io.Writer = pCPR.DiagDest
 
 	// make slices: GTokens, their depths, and
@@ -47,8 +46,8 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 	//  FOR Every XmlToken in the TokenList
 	// =====================================
 	for i, xTkn = range TL {
-		pGT = new(GToken)
-		pGT.BaseToken = xTkn
+		pGTkn = new(GToken)
+		pGTkn.BaseToken = xTkn
 		prDpth = iDepth
 		canSkip = false
 
@@ -60,19 +59,19 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 		// =====================
 
 		case xml.StartElement:
-			pGT.TTType = "Elm"
-			// An StartElement has an xml.Name
+			pGTkn.TTType = TT_type_ELMNT
+			// A StartElement has an [xml.Name]
 			// (same as a GName) and a slice
-			// of xml.Attributes (GAtt's)
+			// of [xml.Attribute] (GAtt's)
 			// type xml.StartElement struct {
 			//     Name Name ; Attr []Attr }
 			var xSE xml.StartElement
 			xSE = xml.CopyToken(xTkn).(xml.StartElement)
-			pGT.GName = GName(xSE.Name)
-			pGT.GName.FixNS()
-			// println("Elm:", pGT.GName.String())
-			if pGT.GName.Space == XU.NS_XML {
-				pGT.GName.Space = "xml:"
+			pGTkn.GName = GName(xSE.Name)
+			pGTkn.GName.FixNS()
+			// println("Elm:", pGTkn.GName.String())
+			if pGTkn.GName.Space == XU.NS_XML {
+				pGTkn.GName.Space = "xml:"
 			}
 			for _, xA := range xSE.Attr {
 				if xA.Name.Space == XU.NS_XML {
@@ -81,12 +80,12 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 					xA.Name.Space = "xml:"
 				}
 				gA := GAtt(xA)
-				pGT.GAtts = append(pGT.GAtts, gA)
+				pGTkn.GAtts = append(pGTkn.GAtts, gA)
 			}
-			pGT.Keyword = ""
-			pGT.Otherwords = ""
-			// fmt.Printf("<!--Start-Tag--> %s \n", outGT.Echo())
+			// fmt.Printf("<!--Start-Tag--> %s \n", outGT.Echo()
 			iDepth++
+
+			var pTS *lwdx.TagSummary
 			var theTag string
 			theTag = xSE.Name.Local
 			pTS = lwdx.GetTagSummaryByTagName(theTag)
@@ -95,24 +94,24 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 				println("TAG NOT FOUND:", theTag)
 			} else {
 				L.L.Dbg("tag<%s> info: %+v", theTag, *pTS)
-				pGT.TagSummary = *pTS
+				pGTkn.TagSummary = *pTS
 			}
 
 		case xml.EndElement:
 			// An EndElement has a Name (GName).
-			pGT.TTType = "end"
+			pGTkn.TTType = TT_type_ENDLM
 			// type xml.EndElement struct { Name Name }
 			var xEE xml.EndElement
 			xEE = xml.CopyToken(xTkn).(xml.EndElement)
-			pGT.GName = GName(xEE.Name)
-			if pGT.GName.Space == XU.NS_XML {
-				pGT.GName.Space = "xml:"
+			pGTkn.GName = GName(xEE.Name)
+			if pGTkn.GName.Space == XU.NS_XML {
+				pGTkn.GName.Space = "xml:"
 			}
-			pGT.Keyword = ""
-			pGT.Otherwords = ""
 			// fmt.Printf("<!--End-Tagnt--> %s \n", outGT.Echo())
 			iDepth--
 			canSkip = true
+
+			var pTS *lwdx.TagSummary
 			var theTag string
 			theTag = xEE.Name.Local
 			pTS = lwdx.GetTagSummaryByTagName(theTag)
@@ -122,45 +121,46 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 			} else {
 				L.L.Dbg("tag<%s> info: %+v",
 					theTag, *pTS)
-				pGT.TagSummary = *pTS
+				pGTkn.TagSummary = *pTS
 			}
 
 		case xml.Comment:
 			// type Comment []byte
-			pGT.TTType = "Cmt"
-			// pGT.Keyword remains ""
-			pGT.Otherwords = S.TrimSpace(string([]byte(xTkn.(xml.Comment))))
-			// fmt.Printf("<!-- Comment --> <!-- %s --> \n", outGT.Otherwords)
+			pGTkn.TTType = TT_type_COMNT
+			pGTkn.Datastring = S.TrimSpace(
+				string([]byte(xTkn.(xml.Comment))))
+			// fmt.Printf("<!-- Comment --> <!-- %s --> \n", outGT.Datastring)
 
 		case xml.ProcInst:
-			pGT.TTType = "PrI"
+			pGTkn.TTType = TT_type_PINST
 			// type xml.ProcInst struct { Target string ; Inst []byte }
 			xTknag := xTkn.(xml.ProcInst)
-			pGT.Keyword = S.TrimSpace(xTknag.Target)
-			pGT.Otherwords = S.TrimSpace(string(xTknag.Inst))
+			pGTkn.TagOrPrcsrDrctv = S.TrimSpace(xTknag.Target)
+			pGTkn.Datastring = S.TrimSpace(string(xTknag.Inst))
 			// fmt.Printf("<!--ProcInstr--> <?%s %s?> \n",
-			// 	outGT.Keyword, outGT.Otherwords)
+			// 	outGT.Keyword, outGT.Datastring)
 
 		case xml.Directive: // type Directive []byte
-			pGT.TTType = "Dir"
+			pGTkn.TTType = TT_type_DRCTV
 			s := S.TrimSpace(string([]byte(xTkn.(xml.Directive))))
-			pGT.Keyword, pGT.Otherwords = SU.SplitOffFirstWord(s)
+			pGTkn.TagOrPrcsrDrctv, pGTkn.Datastring = SU.SplitOffFirstWord(s)
 			// fmt.Printf("<!--Directive--> <!%s %s> \n",
 			// 	outGT.Keyword, outGT.Otherwo rds)
 
 		case xml.CharData:
 			// type CharData []byte
-			pGT.TTType = "ChD"
+			pGTkn.TTType = TT_type_CDATA
 			bb := []byte(xml.CopyToken(xTkn).(xml.CharData))
 			s := S.TrimSpace(string(bb))
-			// pGT.Keyword remains ""
-			pGT.Otherwords = s
+			// pGTkn.Keyword remains ""
+			pGTkn.Datastring = s
+			// If it's just whitespace, mark it as nil.
 			if s == "" {
 				canSkip = true
-				pGT.Depth = prDpth
+				pGTkn.Depth = prDpth
 				gTokens = append(gTokens, nil)
 				gDepths = append(gDepths, prDpth)
-				gFilPosns = append(gFilPosns, &pGT.FilePosition)
+				gFilPosns = append(gFilPosns, &pGTkn.FilePosition)
 				continue
 				L.L.Dbg("Got an all-WS PCDATA")
 				// DO NOTHING
@@ -168,18 +168,18 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 				// that have texTkn content models.
 			}
 			// } else {
-			// fmt.Printf("<!--Char-Data--> %s \n", outGT.Otherwords)
+			// fmt.Printf("<!--Char-Data--> %s \n", outGT.Datastring)
 
 		default:
-			pGT.TTType = "ERR"
+			pGTkn.TTType = TT_type_ERROR
 			L.L.Error("Unrecognized xml.Token type<%T> for: %+v", xTkn, xTkn)
 			// continue
 		}
 
-		pGT.Depth = prDpth
-		gTokens = append(gTokens, pGT)
+		pGTkn.Depth = prDpth
+		gTokens = append(gTokens, pGTkn)
 		gDepths = append(gDepths, prDpth)
-		gFilPosns = append(gFilPosns, &pGT.FilePosition)
+		gFilPosns = append(gFilPosns, &pGTkn.FilePosition)
 
 		// if p != nil { // Useless test ?
 		sCS := ""
@@ -187,12 +187,12 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 			sCS = "(skip)" // "(canSkip?)"
 		} // else {
 		var quote = ""
-		if pGT.TTType == "ChD" {
+		if pGTkn.TTType == TT_type_CDATA {
 			quote = "\""
 		}
-		if pGT.TTType != "end" {
+		if pGTkn.TTType != TT_type_ENDLM {
 			fmt.Fprintf(w, "[%s] %s (%s) %s%s%s %s \n",
-				pCPR.AsString(i), S.Repeat("  ", prDpth), pGT.TTType, quote, pGT.Echo(), quote, sCS)
+				pCPR.AsString(i), S.Repeat("  ", prDpth), pGTkn.TTType, quote, pGTkn.Echo(), quote, sCS)
 		}
 		// }
 	}

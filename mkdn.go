@@ -11,35 +11,40 @@ import (
 	"github.com/yuin/goldmark/ast"
 )
 
-// DoGTokens_mkdn turns every `MkdnToken` Markdown token into a `GToken`.
-// It's pretty simple, because no tree building is done yet. However it
-// does merge text tokens into their preceding tokens, which leaves some
-// nils in the list of tokens.
+// DoGTokens_mkdn turns every Goldmark [ast.Node] Markdown token into a
+// [GToken]. It's pretty simple, because no tree building is done yet.
+// However it does merge text tokens into their preceding tokens, which
+// leaves some nils in the list of tokens.
+// .
 func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
-	var NL []ast.Node
-	var DL []int
-	var p *GToken
-	var gTokens = make([]*GToken, 0)
-	var gDepths = make([]int, 0)
-	var gFilPosns = make([]*XU.FilePosition, 0)
+	var NL []ast.Node // Node list
+	var DL []int      // Depths list
+
 	var NT ast.NodeType // 1..3
 	var NK ast.NodeKind
 	// var NKi int
-	// Destination for Printf's
-	var w io.Writer = pCPR.DiagDest
 	var isText, prevWasText, canSkipCosIsTextless, canMerge bool
+
+	var pGTkn *GToken
+	var w io.Writer = pCPR.DiagDest
+
+	// make slices: GTokens, their depths, and
+	// the source tokens they are made from
+	var gTokens = make([]*GToken, 0)
+	var gDepths = make([]int, 0)
+	var gFilPosns = make([]*XU.FilePosition, 0)
 
 	NL = pCPR.NodeSlice
 	DL = pCPR.NodeDepths
-	L.L.Info("Doing gtoken/mkdn...")
+	L.L.Progress("gtkn/mkdn...")
 
-	// ================================
-	//  FOR Every Node in the NodeList
-	// ================================
+	// ====================================
+	//  FOR Every AST Node in the NodeList
+	// ====================================
 	for i, n := range NL {
-		p = new(GToken)
-		p.BaseToken = n
-		p.Depth = DL[i]
+		pGTkn = new(GToken)
+		pGTkn.BaseToken = n
+		pGTkn.Depth = DL[i]
 		NT = n.Type()
 		NK = n.Kind()
 		prevWasText = isText
@@ -54,8 +59,8 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 				canMerge = prevWasText
 			}
 		}
-		fmt.Fprintf(w, "[%s] %s ", pCPR.AsString(i), S.Repeat("  ", p.Depth-1))
-		//   p.DitaTag, p.HtmlTag, p.NodeText)
+		fmt.Fprintf(w, "[%s] %s ", pCPR.AsString(i), S.Repeat("  ", pGTkn.Depth-1))
+		//   pGTknDitaTag, pGTknHtmlTag, pGTknNodeText)
 
 		if (NK == ast.KindDocument) != (NT == ast.TypeDocument) {
 			panic("KIND/TYPE/DOC")
@@ -68,9 +73,9 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 		}
 		switch NT {
 		case ast.TypeBlock:
-			p.IsBlock = true
+			pGTkn.IsBlock = true
 		case ast.TypeInline:
-			p.IsInline = true
+			pGTkn.IsInline = true
 		}
 		/*
 			Fields:
@@ -97,20 +102,20 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 		case ast.KindDocument:
 			// Note that any metadata comes btwn this
 			// start-of-document tag and the content ("body").
-			p.NodeKind = "KindDocument"
-			p.DitaTag = "topic"
-			p.HtmlTag = "html"
-			p.TTType = TT_type_DOCMT
+			pGTkn.NodeKind = "KindDocument"
+			pGTkn.DitaTag = "topic"
+			pGTkn.HtmlTag = "html"
+			pGTkn.TTType = TT_type_DOCMT
 			fmt.Fprintln(w, " ")
 
 		case ast.KindHeading:
-			p.NodeKind = "KindHeading"
-			p.DitaTag = "?"
-			p.HtmlTag = "h%d"
+			pGTkn.NodeKind = "KindHeading"
+			pGTkn.DitaTag = "?"
+			pGTkn.HtmlTag = "h%d"
 			n2 := n.(*ast.Heading)
-			p.NodeNumeric = n2.Level
-			p.TTType = TT_type_ELMNT
-			p.GName.Local = fmt.Sprintf("h%d", n2.Level)
+			pGTkn.NodeNumeric = n2.Level
+			pGTkn.TTType = TT_type_ELMNT
+			pGTkn.GName.Local = fmt.Sprintf("h%d", n2.Level)
 			fmt.Fprintf(w, "<h%d> \n", n2.Level)
 			// type Heading struct {
 			//   BaseBlock
@@ -125,9 +130,9 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			// https://github.github.com/gfm/#autolinks
 			// Autolinks are absolute URIs and email addresses btwn < and >.
 			// They are parsed as links, with the link target reused as the link label.
-			p.NodeKind = "KindAutoLink"
-			p.DitaTag = "xref"
-			p.HtmlTag = "a@href"
+			pGTkn.NodeKind = "KindAutoLink"
+			pGTkn.DitaTag = "xref"
+			pGTkn.HtmlTag = "a@href"
 			n2 := n.(*ast.AutoLink)
 			fmt.Fprintf(w, "AutoLink: protocol<%s> ALtype <%d> \n",
 				string(n2.Protocol), n2.AutoLinkType)
@@ -151,9 +156,9 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			// w.Write(util.EscapeHTML(label))
 			// w.WriteString(`</a>`)
 		case ast.KindBlockquote:
-			p.NodeKind = "KindBlockquote"
-			p.DitaTag = "?blockquote"
-			p.HtmlTag = "blockquote"
+			pGTkn.NodeKind = "KindBlockquote"
+			pGTkn.DitaTag = "?blockquote"
+			pGTkn.HtmlTag = "blockquote"
 			n2 := n.(*ast.Blockquote)
 			fmt.Fprintf(w, "Blockquote: \n  %+v \n", *n2)
 			// type Blockquote struct {
@@ -161,9 +166,9 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			// }
 			// w.WriteString("<blockquote>\n")
 		case ast.KindCodeBlock:
-			p.NodeKind = "KindCodeBlock"
-			p.DitaTag = "?pre+?code"
-			p.HtmlTag = "pre+code"
+			pGTkn.NodeKind = "KindCodeBlock"
+			pGTkn.DitaTag = "?pre+?code"
+			pGTkn.HtmlTag = "pre+code"
 			n2 := n.(*ast.CodeBlock)
 			fmt.Fprintf(w, "CodeBlock: \n  %+v \n", *n2)
 			// type CodeBlock struct {
@@ -172,9 +177,9 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			// w.WriteString("<pre><code>")
 			// r.writeLines(w, source, n)
 		case ast.KindCodeSpan:
-			p.NodeKind = "KindCodeSpan"
-			p.DitaTag = "?code"
-			p.HtmlTag = "code"
+			pGTkn.NodeKind = "KindCodeSpan"
+			pGTkn.DitaTag = "?code"
+			pGTkn.HtmlTag = "code"
 			// // n2 := n.(*ast.CodeSpan)
 			// // sDump = litter.Sdump(*n2)
 			// type CodeSpan struct {
@@ -192,12 +197,12 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			//   } else {
 			//     r.Writer.RawWrite(w, value)
 		case ast.KindEmphasis:
-			p.NodeKind = "KindEmphasis"
+			pGTkn.NodeKind = "KindEmphasis"
 			// iLevel 2 | iLevel 1
-			p.DitaTag = "b|i"
-			p.HtmlTag = "strong|em"
+			pGTkn.DitaTag = "b|i"
+			pGTkn.HtmlTag = "strong|em"
 			n2 := n.(*ast.Emphasis)
-			p.NodeNumeric = n2.Level
+			pGTkn.NodeNumeric = n2.Level
 			fmt.Fprintf(w, "Emphasis: \n  %+v \n", *n2)
 			// type Emphasis struct {
 			//   BaseInline
@@ -213,9 +218,9 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			//   w.WriteString(tag)
 			//   w.WriteByte('>')
 		case ast.KindFencedCodeBlock:
-			p.NodeKind = "KindFencedCodeBlock"
-			p.DitaTag = "?code"
-			p.HtmlTag = "code"
+			pGTkn.NodeKind = "KindFencedCodeBlock"
+			pGTkn.DitaTag = "?code"
+			pGTkn.HtmlTag = "code"
 			n2 := n.(*ast.FencedCodeBlock)
 			fmt.Fprintf(w, "FencedCodeBlock: \n  %+v \n", *n2)
 			// type FencedCodeBlock struct {
@@ -230,9 +235,9 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			//   w.WriteString(" class=\"language-")
 			//   r.Writer.Write(w, language)
 		case ast.KindHTMLBlock:
-			p.NodeKind = "KindHTMLBlock"
-			p.DitaTag = "?htmlblock"
-			p.HtmlTag = "?htmlblock"
+			pGTkn.NodeKind = "KindHTMLBlock"
+			pGTkn.DitaTag = "?htmlblock"
+			pGTkn.HtmlTag = "?htmlblock"
 			n2 := n.(*ast.HTMLBlock)
 			fmt.Fprintf(w, "HTMLBlock: \n  %+v \n", *n2)
 			// type HTMLBlock struct {
@@ -251,9 +256,9 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			// } else {
 			//   w.WriteString("<!-- raw HTML omitted -->\n")
 		case ast.KindImage:
-			p.NodeKind = "KindImage"
-			p.DitaTag = "image"
-			p.HtmlTag = "img"
+			pGTkn.NodeKind = "KindImage"
+			pGTkn.DitaTag = "image"
+			pGTkn.HtmlTag = "img"
 			n2 := n.(*ast.Image)
 			fmt.Fprintf(w, "Image: \n  %+v \n", *n2)
 			// type Image struct {
@@ -276,9 +281,9 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			// } else {
 			//   w.WriteString(">")
 		case ast.KindLink:
-			p.NodeKind = "KindLink"
-			p.DitaTag = "xref"
-			p.HtmlTag = "a@href"
+			pGTkn.NodeKind = "KindLink"
+			pGTkn.DitaTag = "xref"
+			pGTkn.HtmlTag = "a@href"
 			n2 := n.(*ast.Link)
 			fmt.Fprintf(w, "Link: \n  %+v \n", *n2)
 			// type Link struct {
@@ -296,14 +301,14 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			// }
 			// w.WriteByte('>')
 		case ast.KindList:
-			p.NodeKind = "KindList"
+			pGTkn.NodeKind = "KindList"
 			n2 := n.(*ast.List)
 			if n2.IsOrdered() {
-				p.DitaTag = "ol"
-				p.HtmlTag = "ol"
+				pGTkn.DitaTag = "ol"
+				pGTkn.HtmlTag = "ol"
 			} else {
-				p.DitaTag = "ul"
-				p.HtmlTag = "ul"
+				pGTkn.DitaTag = "ul"
+				pGTkn.HtmlTag = "ul"
 			}
 			fmt.Fprintf(w, "List: \n  %+v \n", *n2)
 			// type List struct {
@@ -328,10 +333,10 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			// } else {
 			//   w.WriteString(">\n")
 		case ast.KindListItem:
-			p.NodeKind = "KindListItem"
+			pGTkn.NodeKind = "KindListItem"
 			n2 := n.(*ast.ListItem)
-			p.DitaTag = "li"
-			p.HtmlTag = "li"
+			pGTkn.DitaTag = "li"
+			pGTkn.HtmlTag = "li"
 			fmt.Fprintf(w, "ListItem: \n  %+v \n", *n2)
 			// type ListItem struct {
 			//   BaseBlock
@@ -344,11 +349,11 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			//   if _, ok := fc.(*ast.TextBlock); !ok {
 			//     w.WriteByte('\n')
 		case ast.KindParagraph:
-			p.NodeKind = "KindParagraph"
-			p.DitaTag = "p"
-			p.HtmlTag = "p"
-			p.TTType = TT_type_ELMNT
-			p.GName.Local = "p"
+			pGTkn.NodeKind = "KindParagraph"
+			pGTkn.DitaTag = "p"
+			pGTkn.HtmlTag = "p"
+			pGTkn.TTType = TT_type_ELMNT
+			pGTkn.GName.Local = "p"
 			fmt.Fprintf(w, "<p> \n")
 			// // n2 := n.(*ast.Paragraph)
 			// // sDump = litter.Sdump(*n2)
@@ -357,9 +362,9 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			// }
 			// w.WriteString("<p>")
 		case ast.KindRawHTML:
-			p.NodeKind = "KindRawHTML"
-			p.DitaTag = "?rawhtml"
-			p.HtmlTag = "?rawhtml"
+			pGTkn.NodeKind = "KindRawHTML"
+			pGTkn.DitaTag = "?rawhtml"
+			pGTkn.HtmlTag = "?rawhtml"
 			n2 := n.(*ast.RawHTML)
 			fmt.Fprintf(w, "RawHTML: \n  %+v \n", *n2)
 			// type RawHTML struct {
@@ -374,10 +379,10 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			//   w.Write(segment.Value(source))
 			// }
 		case ast.KindText:
-			p.NodeKind = "KindText"
+			pGTkn.NodeKind = "KindText"
 			n2 := n.(*ast.Text)
-			p.DitaTag = "?text"
-			p.HtmlTag = "?text"
+			pGTkn.DitaTag = "?text"
+			pGTkn.HtmlTag = "?text"
 			// fmt.Printf("Text: \n  %+v \n", *n2)
 			// // sDump = litter.Sdump(*n2)
 			// type Text struct {
@@ -393,8 +398,8 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			if canSkipCosIsTextless {
 				fmt.Fprintf(w, "(Skipt textlis!) \n")
 				gTokens = append(gTokens, nil)
-				gDepths = append(gDepths, p.Depth)
-				gFilPosns = append(gFilPosns, &p.FilePosition)
+				gDepths = append(gDepths, pGTkn.Depth)
+				gFilPosns = append(gFilPosns, &pGTkn.FilePosition)
 				continue
 			} else if canMerge {
 				// prevN  := NL[i-1]
@@ -406,17 +411,17 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 					prevGT.NodeText += theText
 					fmt.Fprintf(w, "(merged!) \n")
 					gTokens = append(gTokens, nil)
-					gDepths = append(gDepths, p.Depth)
-					gFilPosns = append(gFilPosns, &p.FilePosition)
+					gDepths = append(gDepths, pGTkn.Depth)
+					gFilPosns = append(gFilPosns, &pGTkn.FilePosition)
 					continue
 				}
 			}
-			p.NodeText = theText
-			// p.NodeText = fmt.Sprintf("KindText:\n | %s", string(TheReader.Value(segment)))
-			// p.NodeText = /* fmt.Sprintf("KindText:\n | %s", */ string(pCPR.Reader.Value(segment)) //)
-			p.TTType = TT_type_CDATA
-			p.Datastring = theText
-			fmt.Fprintf(w, "Text<%s> \n", p.NodeText)
+			pGTkn.NodeText = theText
+			// pGTknNodeText = fmt.Sprintf("KindText:\n | %s", string(TheReader.Value(segment)))
+			// pGTknNodeText = /* fmt.Sprintf("KindText:\n | %s", */ string(pCPR.Reader.Value(segment)) //)
+			pGTkn.TTType = TT_type_CDATA
+			pGTkn.Datastring = theText
+			fmt.Fprintf(w, "Text<%s> \n", pGTkn.NodeText)
 			/*
 				if n.IsRaw() {
 					r.Writer.RawWrite(w, segment.Value(TheSource))
@@ -434,9 +439,9 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 				}
 			*/
 		case ast.KindTextBlock:
-			p.NodeKind = "KindTextBlock"
-			p.DitaTag = "?textblock"
-			p.HtmlTag = "?textblock"
+			pGTkn.NodeKind = "KindTextBlock"
+			pGTkn.DitaTag = "?textblock"
+			pGTkn.HtmlTag = "?textblock"
 			// // n2 := n.(*ast.TextBlock)
 			// // sDump = litter.Sdump(*n2)
 			// type TextBlock struct {
@@ -445,9 +450,9 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			// if _, ok := n.NextSibling().(ast.Node); ok && n.FirstChild() != nil {
 			//   w.WriteByte('\n')
 		case ast.KindThematicBreak:
-			p.NodeKind = "KindThematicBreak"
-			p.DitaTag = "hr"
-			p.HtmlTag = "hr"
+			pGTkn.NodeKind = "KindThematicBreak"
+			pGTkn.DitaTag = "hr"
+			pGTkn.HtmlTag = "hr"
 			fmt.Fprintf(w, "\n")
 			// type ThemanticBreak struct {
 			//   BaseBlock
@@ -457,14 +462,14 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			// } else {
 			//   w.WriteString("<hr>\n")
 		default:
-			p.NodeKind = "KindUNK"
-			p.DitaTag = "UNK"
-			p.HtmlTag = "UNK"
+			pGTkn.NodeKind = "KindUNK"
+			pGTkn.DitaTag = "UNK"
+			pGTkn.HtmlTag = "UNK"
 			L.L.Error("Got unknown Markdown NodeKind: %+v", NK)
 		}
-		gTokens = append(gTokens, p)
-		gDepths = append(gDepths, p.Depth)
-		gFilPosns = append(gFilPosns, &p.FilePosition)
+		gTokens = append(gTokens, pGTkn)
+		gDepths = append(gDepths, pGTkn.Depth)
+		gFilPosns = append(gFilPosns, &pGTkn.FilePosition)
 	}
 	return gTokens, nil
 }

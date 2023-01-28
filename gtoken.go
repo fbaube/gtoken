@@ -73,10 +73,10 @@ type GToken struct {
 	GAtts
 
 	IsBlock, IsInline bool
+	NodeLevel         int
 	lwdx.TagSummary
 
 	NodeKind, DitaTag, HtmlTag, NodeText string
-	NodeNumeric                          int
 }
 
 // BaseTokenType returns `XML`, `MKDN`, `HTML`, or future stuff TBD.

@@ -75,10 +75,13 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 		}
 
 		// Now to do some processing
-		fmt.Fprintf(w, "[%s] %s ", pCPR.AsString(i), S.Repeat("  ", pGTkn.Depth-1))
+		fmt.Fprintf(w, "[%s] %s ", pCPR.AsString(i),
+			S.Repeat("  ", pGTkn.Depth-1))
 		//   pGTknDitaTag, pGTknHtmlTag, pGTknNodeText)
 
-		if (nodeKind == ast.KindDocument) != (nodeType == ast.TypeDocument) {
+		// Some sanity checks
+		if (nodeKind == ast.KindDocument) !=
+			(nodeType == ast.TypeDocument) {
 			panic("KIND/TYPE/DOC")
 		}
 		if i == 0 && nodeKind != ast.KindDocument {
@@ -87,14 +90,19 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 		if i > 0 && nodeKind == ast.KindDocument {
 			panic("NON-ROOT IS DOC")
 		}
+
 		switch nodeType {
 		case ast.TypeBlock:
 			pGTkn.IsBlock = true
 		case ast.TypeInline:
 			pGTkn.IsInline = true
+		case ast.TypeDocument:
+			pGTkn.IsBlock, pGTkn.IsInline = false, false
+		default:
+			panic("OOPS, bad NodeType")
 		}
 		/*
-			Fields:
+			Fields (but from WHERE ??!)
 			NodeDepth    int // from node walker
 			NodeType     string
 			NodeKind     string
@@ -105,12 +113,19 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			NodeText string
 		*/
 
-		// ======= !!!!!!! =======
-		// var NodeTypeString = NodeTypes_mkdn[nodeType] // Blk, Inl, Doc
-		// var NodeKindString = nodeKind.String()        // if !isText // Document, Heading, Text, Paragraph
-		// fmt.Fprintln(w, "ndType<", NodeTypeString, "> ndKind<", NodeKindString, ">")
+		var NodeTypeString =
+		// NodeTypes_mkdn[nodeType] // Blk, Inl, Doc
+		PU.MNdTypes[nodeType]
+		var NodeKindString = nodeKind.String()
+		fmt.Fprintln(w, "node: type<", NodeTypeString,
+			"> kind<", NodeKindString, ">")
 
-		switch nodeKind { // ast.NodeKind
+		/// WHAT ABOUT IsBlock() ?
+		// CAN PROBLY GET IT HERE,
+		// and ASSIGN IT TO pGTkn
+
+		switch nodeKind {
+		// Should use lwdx.Equivalents !!
 
 		// ==========
 		//  DOCUMENT
@@ -122,14 +137,14 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			pGTkn.DitaTag = "topic"
 			pGTkn.HtmlTag = "html"
 			pGTkn.TTType = TT_type_DOCMT
-			fmt.Fprintln(w, " ")
+			fmt.Fprintln(w, "<Doc> ")
 
 		case ast.KindHeading:
 			pGTkn.NodeKind = "KindHeading"
 			pGTkn.DitaTag = "?"
 			pGTkn.HtmlTag = "h%d"
 			n2 := mdNode.(*ast.Heading)
-			pGTkn.NodeNumeric = n2.Level
+			pGTkn.NodeLevel = n2.Level
 			pGTkn.TTType = TT_type_ELMNT
 			pGTkn.GName.Local = fmt.Sprintf("h%d", n2.Level)
 			fmt.Fprintf(w, "<h%d> \n", n2.Level)
@@ -218,7 +233,7 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			pGTkn.DitaTag = "b|i"
 			pGTkn.HtmlTag = "strong|em"
 			n2 := mdNode.(*ast.Emphasis)
-			pGTkn.NodeNumeric = n2.Level
+			pGTkn.NodeLevel = n2.Level
 			fmt.Fprintf(w, "Emphasis: \n  %+v \n", *n2)
 			// type Emphasis struct {
 			//   BaseInline

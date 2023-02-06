@@ -30,23 +30,30 @@ func DeleteNils(inGTzn []*GToken) (outGTzn []*GToken) {
 // DumpTo writes out the `GToken`s to the `io.Writer`, one per line, and each
 // line is prefixed with the token type. The output should parse the same as
 // the input file, except perhaps for the treatment of all-whitespace CDATA.
-func DumpTo(GTzn []*GToken, w io.Writer) {
-	if nil == GTzn || nil == w {
+func DumpTo(rGTkns []*GToken, w io.Writer) {
+	if nil == rGTkns || nil == w {
 		L.L.Warning("gparse.gtokzn.DumpTo: NIL ?!")
 		return
 	}
-	// GTzn = GTzn.DeleteNils()
+	rGTkns = DeleteNils(rGTkns)
 	var pGT *GToken
+	var sBIO string // BLCK INLN OTHR
 
-	for _, pGT = range GTzn {
+	for _, pGT = range rGTkns {
 		if nil == pGT {
 			continue
 		}
 		if pGT.TTType == TT_type_ENDLM {
 			continue
 		}
-		fmt.Fprintf(w, "<!--%s--> %s%s \n",
-			pGT.TTType, S.Repeat("  ", pGT.Depth), pGT.Echo())
+		if pGT.IsBlock {
+			sBIO = "=BLK="
+		} else {
+			sBIO = "     "
+		}
+		// fmt.Fprintf(w, "<!--%s%s--> %s%s \n",
+		fmt.Fprintf(w, "(%s) %s %s%.60s \n",
+			pGT.TTType, sBIO, S.Repeat("  ", pGT.Depth), pGT.Echo())
 	}
 }
 

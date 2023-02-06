@@ -93,7 +93,7 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 				L.L.Error("TAG NOT FOUND: " + theTag)
 				println("TAG NOT FOUND:", theTag)
 			} else {
-				L.L.Dbg("tag<%s> info: %+v", theTag, *pTS)
+				L.L.Dbg("xml-beg-tag<%s> info: %+v", theTag, *pTS)
 				pGTkn.TagSummary = *pTS
 			}
 
@@ -119,7 +119,7 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 				L.L.Error("TAG NOT FOUND: " + theTag)
 				println("TAG NOT FOUND:", theTag)
 			} else {
-				L.L.Dbg("tag<%s> info: %+v",
+				L.L.Dbg("xml-end-tag<%s> info: %+v",
 					theTag, *pTS)
 				pGTkn.TagSummary = *pTS
 			}

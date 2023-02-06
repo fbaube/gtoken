@@ -6,36 +6,6 @@ package gtoken
 // DIRECTIVE subtypes, IDs, and ENUM.
 type TTType string
 
-/*
-
-// GTagTokTypes are [xml.Decoder] types, XML directives, ID/REF, ENUM.
-// NOTE: These strings are used in comments thruout this package.
-// .
-var TTTypes = []TTType{
-	"ERR",
-	"Doc", // Document start // has to be the first token)
-	"Elm", // (Start)Element // could be: StELm / "<s>"
-	"end", // EndElement     // could be: Endlm / "</s>" // Not used in GTokens & GTrees
-	"SC/", // SelfClosingTag // could be: SCTag / "<s/>" // Usage is unclear / TBD
-	"ChD", // CDATA          // could be: ChDat / "s"
-	"PrI", // Proc. Instr.   // could be: PrIns / "<?s?>"
-	"Cmt", // XML comment    // could be: Comnt / "<!--s-->"
-	"Dir", // XML directive  // could be: Drctv / "<!s>"
-	// The following are actually DIRECTIVE SUBTYPES, but they
-	// are put in this list so that they can be assigned freely.
-	"DOCTYPE",
-	"ELEMENT",
-	"ATTLIST",
-	"ENTITY",
-	"NOTATION",
-	// The following are TBD.
-	"ID",
-	"IDREF",
-	"ENUM",
-}
-
-*/
-
 const (
 	TT_type_ERROR TTType = "ERR" // ERROR
 
@@ -59,31 +29,6 @@ const (
 	TT_type_IDREF = "IDREF"
 	TT_type_Enum  = "ENUM"
 )
-
-/*
-var ttTypes = []TTType{
-	"ERR",
-	"Doc", // Document start // has to be the first token)
-	"Elm", // (Start)Element // could be: StELm / "<s>"
-	"end", // EndElement     // could be: Endlm / "</s>" // Not used in GTokens & GTrees
-	"SC/", // SelfClosingTag // could be: SCTag / "<s/>" // Usage is unclear / TBD
-	"ChD", // CDATA          // could be: ChDat / "s"
-	"PrI", // Proc. Instr.   // could be: PrIns / "<?s?>"
-	"Cmt", // XML comment    // could be: Comnt / "<!--s-->"
-	"Dir", // XML directive  // could be: Drctv / "<!s>"
-	// The following are actually DIRECTIVE SUBTYPES, but they
-	// are put in this list so that they can be assigned freely.
-	"DOCTYPE",
-	"ELEMENT",
-	"ATTLIST",
-	"ENTITY",
-	"NOTATION",
-	// The following are TBD.
-	"ID",
-	"IDREF",
-	"ENUM",
-}
-*/
 
 func (TT TTType) LongForm() string {
 	switch TT {

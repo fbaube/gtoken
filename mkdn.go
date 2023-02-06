@@ -101,16 +101,15 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 		default:
 			panic("OOPS, bad NodeType")
 		}
-		/*
-			Fields (but from WHERE ??!)
-			NodeDepth    int // from node walker
-			NodeType     string
-			NodeKind     string
-			NodeKindEnum ast.NodeKind
-			NodeKindInt  int
-			// NodeText is the text of the MD node,
-			//  and it is not present for all nodes.
-			NodeText string
+		/* fields (but from WHERE ??!)
+		NodeDepth    int // from node walker
+		NodeType     string
+		NodeKind     string
+		NodeKindEnum ast.NodeKind
+		NodeKindInt  int
+		// NodeText is the text of the MD node,
+		//  and it is not present for all nodes.
+		NodeText string
 		*/
 
 		var NodeTypeString =
@@ -449,25 +448,25 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			}
 			pGTkn.NodeText = theText
 			// pGTknNodeText = fmt.Sprintf("KindText:\n | %s", string(TheReader.Value(segment)))
-			// pGTknNodeText = /* fmt.Sprintf("KindText:\n | %s", */ string(pCPR.Reader.Value(segment)) //)
+			// pGTknNodeText = / * fmt.Sprintf("KindText:\n | %s", */ string(pCPR.Reader.Value(segment)) //)
 			pGTkn.TTType = TT_type_CDATA
 			pGTkn.Datastring = theText
 			fmt.Fprintf(w, "Text<%s> \n", pGTkn.NodeText)
-			/*
-				if n.IsRaw() {
-					r.Writer.RawWrite(w, segment.Value(TheSource))
-				} else {
-					r.Writer.Write(w, segment.Value(TheSource))
-					if n.HardLineBreak() || (mdNode.SoftLineBreak() && r.HardWraps) {
-						if r.XHTML {
-							w.WriteString("<br />\n")
-						} else {
-							w.WriteString("<br>\n")
-						}
-					} else if n.SoftLineBreak() {
-						w.WriteByte('\n')
+			/* old code
+			if n.IsRaw() {
+				r.Writer.RawWrite(w, segment.Value(TheSource))
+			} else {
+				r.Writer.Write(w, segment.Value(TheSource))
+				if n.HardLineBreak() || (mdNode.SoftLineBreak() && r.HardWraps) {
+					if r.XHTML {
+						w.WriteString("<br />\n")
+					} else {
+						w.WriteString("<br>\n")
 					}
+				} else if n.SoftLineBreak() {
+					w.WriteByte('\n')
 				}
+			}
 			*/
 		case ast.KindTextBlock:
 			pGTkn.NodeKind = "KindTextBlock"

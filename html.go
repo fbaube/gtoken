@@ -205,21 +205,20 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 				// fmt.Printf("\t Attr: %+v \n", a)
 				L.L.Dbg("\t Attr: NS<%s> Key<%s> Val: %s", a.Namespace, a.Key, a.Val)
 			}
-		/*
-			                https://pkg.go.dev/golang.org/x/net/html#NodeType
-			                RawNode nodes are not returned by the parser, but
-			                can be part of the Node tree passed to func Render
-			                to insert raw HTML (without escaping).
-			                If so, this package makes no guarantee that the
-			                rendered HTML is secure (from e.g. Cross Site
-			                Scripting attacks) or well-formed.
+		/* old API docs, maybe useful
+		                https://pkg.go.dev/golang.org/x/net/html#NodeType
+		                RawNode nodes are not returned by the parser, but
+		                can be part of the Node tree passed to func Render
+		                to insert raw HTML (without escaping).
+		                If so, this package makes no guarantee that the
+		                rendered HTML is secure (from e.g. Cross Site
+		                Scripting attacks) or well-formed.
 
-					case html.RawNode:
-					  println("HTML RAW node")
-					case html.Directive: // type Directive []byte
-						pGTkn.TTType = TT_type_DRCTV
-						s := S.TrimSpace(string([]byte(xt.(xml.Directive))))
-						pGTkn.Keyword, pGTkn.Datastring = SU.SplitOffFirstWord(s)
+				case html.RawNode:
+				  println("HTML RAW node")
+				case html.Directive: // type Directive []byte
+					pGTkn.TTType = TT_type_DRCTV
+					s := S.TrimSpace(string([]byte(xt.(xml.Directive))))					pGTkn.Keyword, pGTkn.Datastring = SU.SplitOffFirstWord(s)
 		*/
 		default:
 			L.L.Error("Got unknown HTML NT: %+v", NT)
@@ -238,9 +237,7 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 
 // =====================================================================
 
-/*
-THIS seems to be stuff from elsewhere that is saved
-here to maybe provide an outline of what to do.
+/* old stuff from elsewhere, maybe saved to provide an outline of what to do.
 
 		switch NT { // ast.NodeKind
 
@@ -529,7 +526,7 @@ here to maybe provide an outline of what to do.
 					segment := n2.Segment
 					// pGTkn.NodeText = fmt.Sprintf("KindText:\n | %s", string(TheReader.Value(segment)))
 					pGTkn.NodeText = /* fmt.Sprintf("KindText:\n | %s", * / string(pCPR.Reader.Value(segment)) //)
-					/*
+					/* more old stuff
 						if node.IsRaw() {
 							r.Writer.RawWrite(w, segment.Value(TheSource))
 						} else {

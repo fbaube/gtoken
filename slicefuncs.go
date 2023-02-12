@@ -48,11 +48,13 @@ func DumpTo(rGTkns []*GToken, w io.Writer) {
 		}
 		if pGT.IsBlock {
 			sBIO = "=BLK="
+		} else if pGT.IsInline {
+			sBIO = ".inl."
 		} else {
-			sBIO = "     "
+			sBIO = " .?. "
 		}
 		// fmt.Fprintf(w, "<!--%s%s--> %s%s \n",
-		fmt.Fprintf(w, "(%s) %s %s%.60s \n",
+		fmt.Fprintf(w, "(%s) %s %s%.50s ...\n",
 			pGT.TTType, sBIO, S.Repeat("  ", pGT.Depth), pGT.Echo())
 	}
 }

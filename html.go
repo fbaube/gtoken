@@ -184,8 +184,7 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 				L.L.Error("TAG NOT FOUND: " + theData)
 				println("TAG NOT FOUND:", theData)
 			} else {
-				L.L.Dbg("html-tag<%s> info: %+v",
-					theData, *pTS)
+				// L.L.Dbg("html-tag<%s> info: %+v", theData, *pTS)
 				pGTkn.TagSummary = *pTS
 			}
 

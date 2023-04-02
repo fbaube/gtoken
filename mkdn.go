@@ -7,6 +7,7 @@ import (
 
 	L "github.com/fbaube/mlog"
 	PU "github.com/fbaube/parseutils"
+	SU "github.com/fbaube/stringutils"
 	XU "github.com/fbaube/xmlutils"
 	"github.com/yuin/goldmark/ast"
 )
@@ -56,6 +57,7 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 	for i, mdNode = range NL {
 		pGTkn = new(GToken)
 		pGTkn.BaseToken = mdNode
+		pGTkn.MarkupType = SU.MU_type_MKDN
 		pGTkn.Depth = DL[i]
 		nodeType = mdNode.Type()
 		nodeKind = mdNode.Kind()

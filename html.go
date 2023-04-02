@@ -8,6 +8,7 @@ import (
 	"github.com/fbaube/lwdx"
 	L "github.com/fbaube/mlog"
 	PU "github.com/fbaube/parseutils"
+	SU "github.com/fbaube/stringutils"
 	XU "github.com/fbaube/xmlutils"
 	"golang.org/x/net/html"
 	// "golang.org/x/net/html/atom"
@@ -94,6 +95,7 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 	for i, pNode = range NL {
 		pGTkn = new(GToken)
 		pGTkn.BaseToken = pNode
+		pGTkn.MarkupType = SU.MU_type_HTML
 		pGTkn.Depth = DL[i]
 		NT = pNode.Type
 		theData := DataOfHtmlNode(pNode)
@@ -178,14 +180,14 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 				pGTkn.GAtts = append(pGTkn.GAtts, *pGAtt)
 			}
 
-			var pTS *lwdx.TagSummary
-			pTS = lwdx.GetTagSummaryByTagName(theData)
-			if pTS == nil {
+			var pTE *lwdx.TagalogEntry
+			pTE = lwdx.GetTEbyHdita(theData)
+			if pTE == nil {
 				L.L.Error("TAG NOT FOUND: " + theData)
 				println("TAG NOT FOUND:", theData)
 			} else {
-				// L.L.Dbg("html-tag<%s> info: %+v", theData, *pTS)
-				pGTkn.TagSummary = *pTS
+				// L.L.Dbg("html-tag<%s> info: %+v", theData, *pTE)
+				pGTkn.TagalogEntry = pTE
 			}
 
 		case html.CommentNode:

@@ -48,6 +48,7 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 	for i, xTkn = range TL {
 		pGTkn = new(GToken)
 		pGTkn.BaseToken = xTkn
+		pGTkn.MarkupType = SU.MU_type_XML
 		prDpth = iDepth
 		canSkip = false
 
@@ -85,16 +86,16 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 			// fmt.Printf("<!--Start-Tag--> %s \n", outGT.Echo()
 			iDepth++
 
-			var pTS *lwdx.TagSummary
+			var pTE *lwdx.TagalogEntry
 			var theTag string
 			theTag = xSE.Name.Local
-			pTS = lwdx.GetTagSummaryByTagName(theTag)
-			if pTS == nil {
+			pTE = lwdx.GetTEbyXdita(theTag)
+			if pTE == nil {
 				L.L.Error("TAG NOT FOUND: " + theTag)
 				println("TAG NOT FOUND:", theTag)
 			} else {
-				// L.L.Dbg("xml-beg-tag<%s> info: %+v", theTag, *pTS)
-				pGTkn.TagSummary = *pTS
+				// L.L.Dbg("xml-beg-tag<%s> info: %+v", theTag, *pTE)
+				pGTkn.TagalogEntry = pTE
 			}
 
 		case xml.EndElement:
@@ -111,16 +112,16 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 			iDepth--
 			canSkip = true
 
-			var pTS *lwdx.TagSummary
+			var pTE *lwdx.TagalogEntry
 			var theTag string
 			theTag = xEE.Name.Local
-			pTS = lwdx.GetTagSummaryByTagName(theTag)
-			if pTS == nil {
+			pTE = lwdx.GetTEbyXdita(theTag)
+			if pTE == nil {
 				L.L.Error("TAG NOT FOUND: " + theTag)
 				println("TAG NOT FOUND:", theTag)
 			} else {
-				// L.L.Dbg("xml-end-tag<%s> info: %+v",	theTag, *pTS)
-				pGTkn.TagSummary = *pTS
+				// L.L.Dbg("xml-end-tag<%s> info: %+v",	theTag, *pTE)
+				pGTkn.TagalogEntry = pTE
 			}
 
 		case xml.Comment:

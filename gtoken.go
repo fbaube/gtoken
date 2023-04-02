@@ -10,6 +10,7 @@ import (
 
 	"github.com/fbaube/lwdx"
 	L "github.com/fbaube/mlog"
+	SU "github.com/fbaube/stringutils"
 	XU "github.com/fbaube/xmlutils"
 	"github.com/yuin/goldmark/ast"
 	"golang.org/x/net/html"
@@ -32,13 +33,23 @@ import (
 // NOTE that XML Directives are later "normalized", but that's another story.
 // .
 type GToken struct {
-	// Keep the wrapped-original token around, just in case.
-	// Note that a [xml.Token] (or an entire [GToken]) might
-	// be overwritten/erased in later processing, if (for
-	// example) it is a CDATA that has only whitespace.
+	// ==========================
+	// The original token, and
+	// other information about it
+	// ==========================
+	// BaseToken is the original token, wrapped. Keep it  around
+	// "just in case". Note tho that a [xml.Token] (or an entire
+	// [GToken]) might be overwritten/erased in later processing,
+	// if (for example) it is a CDATA that has only whitespace.
 	BaseToken interface{}
-	Depth     int
+	// MarkupType of the original token; the value is one of
+	// MU_type_(XML/HTML/MKDN/BIN). It is particularly helpful
+	// to have this info at the token level when we consider
+	// that for example, we can embed HTML tags in Markdown.
+	// NOTE that in the future, this could be a namespace.
+	SU.MarkupType
 	XU.FilePosition
+	Depth int
 
 	// TagOrPrcsrDrctv (ex-"Keyword") is for holding
 	// (a) a simple string of the tag of an element
@@ -48,34 +59,41 @@ type GToken struct {
 	// (c) an XML directive ("doctype", "element",
 	//     "attlist", "entity", etc.)
 	TagOrPrcsrDrctv string
-	// Keyword string
 
-	// Datastring (ex-"Otherwords") is for all *except*
-	// TT_type_ELMNT and TT_type_ENDLM
-	Datastring string
-	// Otherwords string
-
-	// GTagTokType enumerates the types of struct [GToken] and also
-	// the types of struct [GTag], which are a strict superset.
-	// Therefore the two structs use a shared "type" enumeration,
-	// of type TTType.
+	// GTagTokType enumerates (a) the types of struct [GToken],
+	// and also (b) the types of struct [GTag], which are a
+	// strict superset of those for GToken. Therefore the two
+	// structs use a shared "type" enumeration, of type [TTType].
 	//
-	// NOTE that TT_type_ENDLM (`EndElement`) *might* be OK for a
-	// [GToken.Type] (this is a TBD) but it certainly is not OK for
-	// a [GTag.Type], cos the existence of a matching `EndElement`
-	// for every `StartElement` should be assumed (but need not
-	// actually be present when depth info is available) in a
-	// valid [gtree.GTree].
+	// NOTE that TT_type_ENDLM (`EndElement`) *might* be OK for
+	// a [GToken.Type] (this is a TBD) but it certainly is not
+	// OK for a [GTag.Type], cos the existence of a matching
+	// [EndElement] for every [StartElement] should be assumed
+	// (but need not actually be present) in a valid [GTree],
+	// when and where token depth info is available.
 	TTType
-	// GName is for XML TT_type_ELMNT and TT_type_ENDLM *only*
+
+	// Datastring is ex-"Otherwords", ONLY
+	// for [TT_type_ELMNT] and [TT_type_ENDL].
+	Datastring string
+
+	// GName is ONLY for
+	// [TT_type_ELMNT] and [TT_type_ENDLM].
 	GName
-	// GAtts is for XML TT_type_ELMNT *only*, and HTML, and (finagled) MKDN
+
+	// GAtts is ONLY for [XML TT_type_ELMNT]
+	// and HTML and (finagled) MKDN.
 	GAtts
 
+	// IsBlock and IsInline are
+	// dupes of TagalogEntry ?
 	IsBlock, IsInline bool
 	NodeLevel         int
-	lwdx.TagSummary
 
+	*lwdx.TagalogEntry
+
+	// DitaTag and HtmlTag are
+	// dupes of TagalogEntry ?
 	NodeKind, DitaTag, HtmlTag, NodeText string
 }
 

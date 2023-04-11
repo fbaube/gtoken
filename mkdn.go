@@ -36,7 +36,7 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 	var isText, prevWasText, canSkipCosIsTextless, canMerge bool
 
 	var pGTkn *GToken
-	var w io.Writer = pCPR.DiagDest
+	var w io.Writer = pCPR.Writer
 
 	// make slices: GTokens, their depths, and
 	// the source tokens they are made from

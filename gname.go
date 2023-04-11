@@ -5,7 +5,6 @@ package gtoken
 
 import (
 	"encoding/xml"
-	"io"
 	S "strings"
 )
 
@@ -16,8 +15,8 @@ import (
 // This *greatly* simplifies output generation.
 //
 // Structure details of `xml.Name`:
-//   type Name struct { Space, Local string }
 //
+//	type Name struct { Space, Local string }
 type GName xml.Name
 
 func (p1 *GName) Equals(p2 *GName) bool {
@@ -28,34 +27,6 @@ func (p *GName) FixNS() {
 	if p.Space != "" && !S.HasSuffix(p.Space, ":") {
 		p.Space = p.Space + ":"
 	}
-}
-
-// Echo implements Markupper.
-func (N GName) Echo() string {
-	// if N.Space == "" {
-	// 	return N.Local
-	// }
-	// Assert colon at the end of `N.Space`
-	if N.Space != "" && !S.HasSuffix(N.Space, ":") {
-		// panic("Missing colon on NS")
-		return N.Space + ":" + N.Local
-	}
-	return N.Space + N.Local
-}
-
-// EchoTo implements Markupper.
-func (N GName) EchoTo(w io.Writer) {
-	w.Write([]byte(N.Echo()))
-}
-
-// String implements Markupper.
-func (N GName) String() string {
-	return N.Echo()
-}
-
-// DumpTo implements Markupper.
-func (N GName) DumpTo(w io.Writer) {
-	w.Write([]byte(N.String()))
 }
 
 // NewGName adds a colon to a non-empty namespace if it is not there already.

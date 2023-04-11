@@ -76,7 +76,7 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 	var gotXmlProlog bool
 
 	var pGTkn *GToken
-	var w io.Writer = pCPR.DiagDest
+	var w io.Writer = pCPR.Writer
 
 	// make slices: GTokens & their depths & the file
 	// positions of the source tokens they are made from.

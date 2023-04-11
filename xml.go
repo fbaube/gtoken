@@ -19,7 +19,7 @@ import (
 //
 // [xml.Token] is an "any" interface holding a token types:
 // StartElement, EndElement, CharData, Comment, ProcInst, Directive.
-// Note that these types are a subset of [gtoken.TTType].
+// Note that [gtoken.TTType] is a superset of these types.
 // .
 func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 	var TL []xml.Token // Token List
@@ -29,7 +29,7 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 	var canSkip bool
 
 	var pGTkn *GToken
-	var w io.Writer = pCPR.DiagDest
+	var w io.Writer = pCPR.Writer
 
 	// make slices: GTokens, their depths, and
 	// the source tokens they are made from
@@ -55,15 +55,11 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 		// Now process based on the Token type
 		switch xTkn.(type) {
 
-		// =====================
-		//  case DOCUMENT: ??!!
-		// =====================
-
 		case xml.StartElement:
 			pGTkn.TTType = TT_type_ELMNT
 			// A StartElement has an [xml.Name]
 			// (same as a GName) and a slice
-			// of [xml.Attribute] (GAtt's)
+			// of [xml.Attribute] (GAtt's).
 			// type xml.StartElement struct {
 			//     Name Name ; Attr []Attr }
 			var xSE xml.StartElement
@@ -71,6 +67,9 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 			pGTkn.GName = GName(xSE.Name)
 			pGTkn.GName.FixNS()
 			// println("Elm:", pGTkn.GName.String())
+
+			// Is this the place check for any of the other
+			// "standard" XML namespaces that we might encounter ?
 			if pGTkn.GName.Space == XU.NS_XML {
 				pGTkn.GName.Space = "xml:"
 			}
@@ -192,9 +191,9 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 		}
 		if pGTkn.TTType != TT_type_ENDLM {
 			fmt.Fprintf(w, "[%s] %s (%s) %s%s%s %s \n",
-				pCPR.AsString(i), S.Repeat("  ", prDpth), pGTkn.TTType, quote, pGTkn.Echo(), quote, sCS)
+				pCPR.AsString(i), S.Repeat("  ", prDpth),
+				pGTkn.TTType, quote, pGTkn.Echo(), quote, sCS)
 		}
-		// }
 	}
 	pCPR.NodeDepths = gDepths
 	return gTokens, nil

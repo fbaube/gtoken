@@ -62,29 +62,29 @@ type GToken struct {
 	//     "attlist", "entity", etc.)
 	TagOrPrcsrDrctv string
 
-	// GTagTokType enumerates (a) the types of struct [GToken],
-	// and also (b) the types of struct [GTag], which are a
-	// strict superset of those for GToken. Therefore the two
-	// structs use a shared "type" enumeration, of type [TTType].
+	// TagDirectiveType enumerates (a) the types of struct [GToken],
+	// and also (b) the types of struct [GTag], which are a strict
+	// superset of those for GToken. Therefore the two structs use
+	// a shared "type" enumeration, of type [TTType].
 	//
-	// NOTE that TT_type_ENDLM (`EndElement`) *might* be OK for
+	// NOTE that TD_type_ENDLM (`EndElement`) *might* be OK for
 	// a [GToken.Type] (this is a TBD) but it certainly is not
 	// OK for a [GTag.Type], cos the existence of a matching
 	// [EndElement] for every [StartElement] should be assumed
 	// (but need not actually be present) in a valid [GTree],
 	// when and where token depth info is available.
-	TTType
+	XU.TDType
 
 	// Datastring is ex-"Otherwords", ONLY
-	// for [TT_type_ELMNT] and [TT_type_ENDL].
+	// for [TD_type_ELMNT] and [TD_type_ENDL].
 	Datastring string
 
 	// GName is ONLY for
-	// [TT_type_ELMNT] and [TT_type_ENDLM].
+	// [TD_type_ELMNT] and [TD_type_ENDLM].
 	// GName
 	XU.XName
 
-	// GAtts is ONLY for [XML TT_type_ELMNT]
+	// GAtts is ONLY for [XML TD_type_ELMNT]
 	// and HTML and (finagled) MKDN.
 	// GAtts
 	XU.XAtts

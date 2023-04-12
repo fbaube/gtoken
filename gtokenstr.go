@@ -2,6 +2,7 @@ package gtoken
 
 import (
 	L "github.com/fbaube/mlog"
+	XU "github.com/fbaube/xmlutils"
 	"io"
 )
 
@@ -9,31 +10,31 @@ import (
 func (T GToken) Echo() string {
 	// println("GNAME", T.GName.Echo())
 	// var s string
-	switch T.TTType {
+	switch T.TDType {
 
-	case TT_type_DOCMT:
+	case XU.TD_type_DOCMT:
 		return "<-- \"Doc\" DOCUMENT START -->"
 
-	case TT_type_ELMNT:
+	case XU.TD_type_ELMNT:
 		return "<" + T.XName.Echo() + T.XAtts.Echo() + ">"
 
-	case TT_type_ENDLM:
+	case XU.TD_type_ENDLM:
 		return "</" + T.XName.Echo() + ">"
 
-	case TT_type_VOIDD:
+	case XU.TD_type_VOIDD:
 		L.L.Error("Bogus token <voidd/>")
 		return "ERR"
 
-	case TT_type_CDATA:
+	case XU.TD_type_CDATA:
 		return T.Datastring
 
-	case TT_type_PINST:
+	case XU.TD_type_PINST:
 		return "<?" + T.TagOrPrcsrDrctv + " " + T.Datastring + "?>"
 
-	case TT_type_COMNT:
+	case XU.TD_type_COMNT:
 		return "<!-- " + T.Datastring + " -->"
 
-	case TT_type_DRCTV: // Directive subtypes,
+	case XU.TD_type_DRCTV: // Directive subtypes,
 		// after Directives have been normalized
 		return "<!" + T.TagOrPrcsrDrctv + " " + T.Datastring + ">"
 
@@ -51,8 +52,8 @@ func (T GToken) EchoTo(w io.Writer) {
 // String implements Markupper.
 func (T GToken) String() string {
 	// return ("<!--" + T.TTType.LongForm() + "-->  " + T.Echo())
-	var s3 = string(T.TTType)
-	if s3 == TT_type_ENDLM {
+	var s3 = string(T.TDType)
+	if s3 == XU.TD_type_ENDLM {
 		s3 = " / "
 	}
 	return ("[" + s3 + "] " + T.Echo())

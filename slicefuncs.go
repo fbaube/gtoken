@@ -10,6 +10,7 @@ import (
 	S "strings"
 	// "github.com/dimchansky/utfbom"
 	L "github.com/fbaube/mlog"
+	XU "github.com/fbaube/xmlutils"
 )
 
 // GTokenization is defined solely for the convenience methods defined below.
@@ -43,7 +44,7 @@ func DumpTo(rGTkns []*GToken, w io.Writer) {
 		if nil == pGT {
 			continue
 		}
-		if pGT.TTType == TT_type_ENDLM {
+		if pGT.TDType == XU.TD_type_ENDLM {
 			continue
 		}
 		if pGT.IsBlock {
@@ -55,7 +56,7 @@ func DumpTo(rGTkns []*GToken, w io.Writer) {
 		}
 		// fmt.Fprintf(w, "<!--%s%s--> %s%s \n",
 		fmt.Fprintf(w, "(%s) %s %s%.50s ...\n",
-			pGT.TTType, sBIO, S.Repeat("  ", pGT.Depth), pGT.Echo())
+			pGT.TDType, sBIO, S.Repeat("  ", pGT.Depth), pGT.Echo())
 	}
 }
 
@@ -65,7 +66,7 @@ func HasDoctype(GTs []*GToken) (bool, string) {
 	}
 	var pGT *GToken
 	for _, pGT = range GTs {
-		if pGT.TTType == TT_type_DRCTV {
+		if pGT.TDType == XU.TD_type_DRCTV {
 			return true, pGT.Datastring
 		}
 	}
@@ -78,7 +79,7 @@ func GetFirstByTag(gTkzn []*GToken, s string) *GToken {
 		return nil
 	}
 	for _, p := range gTkzn {
-		if p.XName.Local == s && p.TTType == TT_type_ELMNT {
+		if p.XName.Local == s && p.TDType == XU.TD_type_ELMNT {
 			return p
 		}
 	}
@@ -95,7 +96,7 @@ func GetAllByTag(gTkzn []*GToken, s string) []*GToken {
 	var ret []*GToken
 	ret = make([]*GToken, 0)
 	for _, p := range gTkzn {
-		if p.XName.Local == s && p.TTType == TT_type_ELMNT {
+		if p.XName.Local == s && p.TDType == XU.TD_type_ELMNT {
 			// fmt.Printf("found a match [%d] %s (NS:%s)\n", i, p.GName.Local, p.GName.Space)
 			ret = append(ret, p)
 		}

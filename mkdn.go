@@ -137,7 +137,7 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			pGTkn.NodeKind = "KindDocument"
 			pGTkn.DitaTag = "topic"
 			pGTkn.HtmlTag = "html"
-			pGTkn.TTType = TT_type_DOCMT
+			pGTkn.TDType = XU.TD_type_DOCMT
 			fmt.Fprintln(w, "<Doc> ")
 
 		case ast.KindHeading:
@@ -146,7 +146,7 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			pGTkn.HtmlTag = "h%d"
 			n2 := mdNode.(*ast.Heading)
 			pGTkn.NodeLevel = n2.Level
-			pGTkn.TTType = TT_type_ELMNT
+			pGTkn.TDType = XU.TD_type_ELMNT
 			pGTkn.XName.Local = fmt.Sprintf("h%d", n2.Level)
 			fmt.Fprintf(w, "<h%d> \n", n2.Level)
 			// type Heading struct {
@@ -384,7 +384,7 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			pGTkn.NodeKind = "KindParagraph"
 			pGTkn.DitaTag = "p"
 			pGTkn.HtmlTag = "p"
-			pGTkn.TTType = TT_type_ELMNT
+			pGTkn.TDType = XU.TD_type_ELMNT
 			pGTkn.XName.Local = "p"
 			fmt.Fprintf(w, "<p> \n")
 			// // n2 := n.(*ast.Paragraph)
@@ -451,7 +451,7 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			pGTkn.NodeText = theText
 			// pGTknNodeText = fmt.Sprintf("KindText:\n | %s", string(TheReader.Value(segment)))
 			// pGTknNodeText = / * fmt.Sprintf("KindText:\n | %s", */ string(pCPR.Reader.Value(segment)) //)
-			pGTkn.TTType = TT_type_CDATA
+			pGTkn.TDType = XU.TD_type_CDATA
 			pGTkn.Datastring = theText
 			fmt.Fprintf(w, "Text<%s> \n", pGTkn.NodeText)
 			/* old code

@@ -153,19 +153,19 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 		//  DOCUMENT
 		// ==========
 		case html.DocumentNode:
-			pGTkn.TTType = TT_type_DOCMT
+			pGTkn.TDType = XU.TD_type_DOCMT
 
 		case html.ErrorNode:
-			pGTkn.TTType = TT_type_ERROR
+			pGTkn.TDType = XU.TD_type_ERROR
 			L.L.Warning("Got HTML ERR node")
 
 		case html.TextNode:
-			pGTkn.TTType = TT_type_CDATA
+			pGTkn.TDType = XU.TD_type_CDATA
 			// The text of the Node
 			pGTkn.Datastring = theData
 
 		case html.ElementNode:
-			pGTkn.TTType = TT_type_ELMNT
+			pGTkn.TDType = XU.TD_type_ELMNT
 			pGTkn.XName.Local = theData
 
 			for _, xA := range pNode.Attr {
@@ -194,16 +194,16 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 			}
 
 		case html.CommentNode:
-			pGTkn.TTType = TT_type_COMNT
+			pGTkn.TDType = XU.TD_type_COMNT
 			pGTkn.Datastring = theData
 
 			if gotXmlProlog {
-				pGTkn.TTType = TT_type_PINST
+				pGTkn.TDType = XU.TD_type_PINST
 				println("XML prelude processed as Comment!")
 			}
 
 		case html.DoctypeNode:
-			pGTkn.TTType = TT_type_DRCTV
+			pGTkn.TDType = XU.TD_type_DRCTV
 			pGTkn.Datastring = theData
 			for _, a := range pNode.Attr {
 				// fmt.Printf("\t Attr: %+v \n", a)
@@ -221,7 +221,7 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 				case html.RawNode:
 				  println("HTML RAW node")
 				case html.Directive: // type Directive []byte
-					pGTkn.TTType = TT_type_DRCTV
+					pGTkn.TDType = XU.TD_type_DRCTV
 					s := S.TrimSpace(string([]byte(xt.(xml.Directive))))					pGTkn.Keyword, pGTkn.Datastring = SU.SplitOffFirstWord(s)
 		*/
 		default:

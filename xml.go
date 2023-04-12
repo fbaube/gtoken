@@ -15,11 +15,11 @@ import (
 // DoGTokens_xml turns every [xml.Token] (from stdlib) into
 // a [GToken]. It's pretty simple because no tree building is
 // done yet. Basically it just copies in the Node type and the
-// Node's data, and sets the [TTType] field,
+// Node's data, and sets the [TDType] field,
 //
 // [xml.Token] is an "any" interface holding a token types:
 // StartElement, EndElement, CharData, Comment, ProcInst, Directive.
-// Note that [gtoken.TTType] is a superset of these types.
+// Note that [gtoken.TDType] is a superset of these types.
 // .
 func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 	var TL []xml.Token // Token List
@@ -56,7 +56,7 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 		switch xTkn.(type) {
 
 		case xml.StartElement:
-			pGTkn.TTType = TT_type_ELMNT
+			pGTkn.TDType = XU.TD_type_ELMNT
 			// A StartElement has an [xml.Name]
 			// (same as a XName) and a slice
 			// of [xml.Attribute] (GAtt's).
@@ -99,7 +99,7 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 
 		case xml.EndElement:
 			// An EndElement has a Name (XName).
-			pGTkn.TTType = TT_type_ENDLM
+			pGTkn.TDType = XU.TD_type_ENDLM
 			// type xml.EndElement struct { Name Name }
 			var xEE xml.EndElement
 			xEE = xml.CopyToken(xTkn).(xml.EndElement)
@@ -125,13 +125,13 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 
 		case xml.Comment:
 			// type Comment []byte
-			pGTkn.TTType = TT_type_COMNT
+			pGTkn.TDType = XU.TD_type_COMNT
 			pGTkn.Datastring = S.TrimSpace(
 				string([]byte(xTkn.(xml.Comment))))
 			// fmt.Printf("<!-- Comment --> <!-- %s --> \n", outGT.Datastring)
 
 		case xml.ProcInst:
-			pGTkn.TTType = TT_type_PINST
+			pGTkn.TDType = XU.TD_type_PINST
 			// type xml.ProcInst struct { Target string ; Inst []byte }
 			xTknag := xTkn.(xml.ProcInst)
 			pGTkn.TagOrPrcsrDrctv = S.TrimSpace(xTknag.Target)
@@ -140,7 +140,7 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 			// 	outGT.Keyword, outGT.Datastring)
 
 		case xml.Directive: // type Directive []byte
-			pGTkn.TTType = TT_type_DRCTV
+			pGTkn.TDType = XU.TD_type_DRCTV
 			s := S.TrimSpace(string([]byte(xTkn.(xml.Directive))))
 			pGTkn.TagOrPrcsrDrctv, pGTkn.Datastring = SU.SplitOffFirstWord(s)
 			// fmt.Printf("<!--Directive--> <!%s %s> \n",
@@ -148,7 +148,7 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 
 		case xml.CharData:
 			// type CharData []byte
-			pGTkn.TTType = TT_type_CDATA
+			pGTkn.TDType = XU.TD_type_CDATA
 			bb := []byte(xml.CopyToken(xTkn).(xml.CharData))
 			s := S.TrimSpace(string(bb))
 			// pGTkn.Keyword remains ""
@@ -170,7 +170,7 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 			// fmt.Printf("<!--Char-Data--> %s \n", outGT.Datastring)
 
 		default:
-			pGTkn.TTType = TT_type_ERROR
+			pGTkn.TDType = XU.TD_type_ERROR
 			L.L.Error("Unrecognized xml.Token type<%T> for: %+v", xTkn, xTkn)
 			// continue
 		}
@@ -186,13 +186,13 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 			sCS = "(skip)" // "(canSkip?)"
 		} // else {
 		var quote = ""
-		if pGTkn.TTType == TT_type_CDATA {
+		if pGTkn.TDType == XU.TD_type_CDATA {
 			quote = "\""
 		}
-		if pGTkn.TTType != TT_type_ENDLM {
+		if pGTkn.TDType != XU.TD_type_ENDLM {
 			fmt.Fprintf(w, "[%s] %s (%s) %s%s%s %s \n",
 				pCPR.AsString(i), S.Repeat("  ", prDpth),
-				pGTkn.TTType, quote, pGTkn.Echo(), quote, sCS)
+				pGTkn.TDType, quote, pGTkn.Echo(), quote, sCS)
 		}
 	}
 	pCPR.NodeDepths = gDepths

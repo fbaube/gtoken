@@ -15,13 +15,13 @@ func (T GToken) Echo() string {
 		return "<-- \"Doc\" DOCUMENT START -->"
 
 	case TT_type_ELMNT:
-		return "<" + T.GName.Echo() + T.GAtts.Echo() + ">"
+		return "<" + T.XName.Echo() + T.XAtts.Echo() + ">"
 
 	case TT_type_ENDLM:
-		return "</" + T.GName.Echo() + ">"
+		return "</" + T.XName.Echo() + ">"
 
-	case TT_type_SCLSG:
-		L.L.Error("Bogus token <SC/>")
+	case TT_type_VOIDD:
+		L.L.Error("Bogus token <voidd/>")
 		return "ERR"
 
 	case TT_type_CDATA:

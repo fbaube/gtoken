@@ -14,6 +14,8 @@ import (
 	// "golang.org/x/net/html/atom"
 )
 
+/* MOVED
+
 // DataOfHtmlNode returns a string that should be
 // the value of both [Node.Data] and [Node.DataAtom] .
 // If they differ, a warning is issued. Note that if
@@ -42,6 +44,7 @@ func DataOfHtmlNode(n *html.Node) string {
 	}
 	return s
 }
+*/
 
 // NTstring: 0="Err", 1="ChD", 2="Doc", 3="Elm", 4="Cmt", 5="Doctype",
 
@@ -94,11 +97,11 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 	// ================================
 	for i, pNode = range NL {
 		pGTkn = new(GToken)
-		pGTkn.BaseToken = pNode
+		pGTkn.SourceToken = pNode
 		pGTkn.MarkupType = SU.MU_type_HTML
 		pGTkn.Depth = DL[i]
 		NT = pNode.Type
-		theData := DataOfHtmlNode(pNode)
+		theData := PU.DataOfHtmlNode(pNode)
 
 		// Prep: If it's an empty Text node,
 		// set the GToken to nil and bail out
@@ -163,21 +166,21 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 
 		case html.ElementNode:
 			pGTkn.TTType = TT_type_ELMNT
-			pGTkn.GName.Local = theData
+			pGTkn.XName.Local = theData
 
 			for _, xA := range pNode.Attr {
 				// gA := GAtt(xA)
-				pGAtt := new(GAtt)
+				pXAtt := new(XU.XAtt)
 				// GAtt is just xml.Attr
 				// type Attr struct {
 				//      Name  Name
 				//      Value string }
 				// type Name struct {
 				//      Space, Local string }
-				pGAtt.Name.Local = xA.Key
-				pGAtt.Name.Space = xA.Namespace
-				pGAtt.Value = xA.Val
-				pGTkn.GAtts = append(pGTkn.GAtts, *pGAtt)
+				pXAtt.Name.Local = xA.Key
+				pXAtt.Name.Space = xA.Namespace
+				pXAtt.Value = xA.Val
+				pGTkn.XAtts = append(pGTkn.XAtts, *pXAtt)
 			}
 
 			var pTE *lwdx.TagalogEntry

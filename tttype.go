@@ -12,7 +12,7 @@ const (
 	TT_type_DOCMT = "Docmt"
 	TT_type_ELMNT = "Elmnt"
 	TT_type_ENDLM = "endlm"
-	TT_type_SCLSG = "SClsg"
+	TT_type_VOIDD = "Voidd" // A void tag is one that needs/takes no closing tag
 	TT_type_CDATA = "CData"
 	TT_type_PINST = "PInst"
 	TT_type_COMNT = "Comnt"
@@ -44,8 +44,8 @@ func (TT TTType) LongForm() string {
 		return "ProcInstr"
 	case TT_type_DRCTV:
 		return "Directive"
-	case TT_type_SCLSG:
-		return "SelfClose"
+	case TT_type_VOIDD:
+		return "Void--Tag"
 	case TT_type_DOCMT:
 		return "DocuStart"
 	}

@@ -56,7 +56,7 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 	// ====================================
 	for i, mdNode = range NL {
 		pGTkn = new(GToken)
-		pGTkn.BaseToken = mdNode
+		pGTkn.SourceToken = mdNode
 		pGTkn.MarkupType = SU.MU_type_MKDN
 		pGTkn.Depth = DL[i]
 		nodeType = mdNode.Type()
@@ -147,7 +147,7 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			n2 := mdNode.(*ast.Heading)
 			pGTkn.NodeLevel = n2.Level
 			pGTkn.TTType = TT_type_ELMNT
-			pGTkn.GName.Local = fmt.Sprintf("h%d", n2.Level)
+			pGTkn.XName.Local = fmt.Sprintf("h%d", n2.Level)
 			fmt.Fprintf(w, "<h%d> \n", n2.Level)
 			// type Heading struct {
 			//   BaseBlock
@@ -385,7 +385,7 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			pGTkn.DitaTag = "p"
 			pGTkn.HtmlTag = "p"
 			pGTkn.TTType = TT_type_ELMNT
-			pGTkn.GName.Local = "p"
+			pGTkn.XName.Local = "p"
 			fmt.Fprintf(w, "<p> \n")
 			// // n2 := n.(*ast.Paragraph)
 			// // sDump = litter.Sdump(*n2)

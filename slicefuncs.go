@@ -78,7 +78,7 @@ func GetFirstByTag(gTkzn []*GToken, s string) *GToken {
 		return nil
 	}
 	for _, p := range gTkzn {
-		if p.GName.Local == s && p.TTType == TT_type_ELMNT {
+		if p.XName.Local == s && p.TTType == TT_type_ELMNT {
 			return p
 		}
 	}
@@ -95,7 +95,7 @@ func GetAllByTag(gTkzn []*GToken, s string) []*GToken {
 	var ret []*GToken
 	ret = make([]*GToken, 0)
 	for _, p := range gTkzn {
-		if p.GName.Local == s && p.TTType == TT_type_ELMNT {
+		if p.XName.Local == s && p.TTType == TT_type_ELMNT {
 			// fmt.Printf("found a match [%d] %s (NS:%s)\n", i, p.GName.Local, p.GName.Space)
 			ret = append(ret, p)
 		}

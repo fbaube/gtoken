@@ -47,7 +47,7 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 	// =====================================
 	for i, xTkn = range TL {
 		pGTkn = new(GToken)
-		pGTkn.BaseToken = xTkn
+		pGTkn.SourceToken = xTkn
 		pGTkn.MarkupType = SU.MU_type_XML
 		prDpth = iDepth
 		canSkip = false
@@ -58,20 +58,20 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 		case xml.StartElement:
 			pGTkn.TTType = TT_type_ELMNT
 			// A StartElement has an [xml.Name]
-			// (same as a GName) and a slice
+			// (same as a XName) and a slice
 			// of [xml.Attribute] (GAtt's).
 			// type xml.StartElement struct {
 			//     Name Name ; Attr []Attr }
 			var xSE xml.StartElement
 			xSE = xml.CopyToken(xTkn).(xml.StartElement)
-			pGTkn.GName = GName(xSE.Name)
-			pGTkn.GName.FixNS()
-			// println("Elm:", pGTkn.GName.String())
+			pGTkn.XName = XU.XName(xSE.Name)
+			pGTkn.XName.FixNS()
+			// println("Elm:", pGTkn.XName.String())
 
 			// Is this the place check for any of the other
 			// "standard" XML namespaces that we might encounter ?
-			if pGTkn.GName.Space == XU.NS_XML {
-				pGTkn.GName.Space = "xml:"
+			if pGTkn.XName.Space == XU.NS_XML {
+				pGTkn.XName.Space = "xml:"
 			}
 			for _, xA := range xSE.Attr {
 				if xA.Name.Space == XU.NS_XML {
@@ -79,8 +79,8 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 					// newgtoken xml:" + A.Name.Local)
 					xA.Name.Space = "xml:"
 				}
-				gA := GAtt(xA)
-				pGTkn.GAtts = append(pGTkn.GAtts, gA)
+				gA := XU.XAtt(xA)
+				pGTkn.XAtts = append(pGTkn.XAtts, gA)
 			}
 			// fmt.Printf("<!--Start-Tag--> %s \n", outGT.Echo()
 			iDepth++
@@ -98,14 +98,14 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 			}
 
 		case xml.EndElement:
-			// An EndElement has a Name (GName).
+			// An EndElement has a Name (XName).
 			pGTkn.TTType = TT_type_ENDLM
 			// type xml.EndElement struct { Name Name }
 			var xEE xml.EndElement
 			xEE = xml.CopyToken(xTkn).(xml.EndElement)
-			pGTkn.GName = GName(xEE.Name)
-			if pGTkn.GName.Space == XU.NS_XML {
-				pGTkn.GName.Space = "xml:"
+			pGTkn.XName = XU.XName(xEE.Name)
+			if pGTkn.XName.Space == XU.NS_XML {
+				pGTkn.XName.Space = "xml:"
 			}
 			// fmt.Printf("<!--End-Tagnt--> %s \n", outGT.Echo())
 			iDepth--

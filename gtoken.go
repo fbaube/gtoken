@@ -1,7 +1,7 @@
 package gtoken
 
 // This file: Structures for Generic Golang Tokens.
-// They are based on struct `xml.Token` returned by the Golang XML parser
+// They are based on struct [xml.Token] returned by the Golang XML parser
 // but have been generalized to be usable for other LwDITA formats.
 
 import (
@@ -22,31 +22,35 @@ import (
 // To do this, the tokens produced by each parsing API are reduced to
 // their essentials:
 //   - tag/token type (defined by the enumeration [GTagTokType],
-//     named TT_type_*, values are strings))
-//   - tag name (iff a markup element; is stored in GName, incl. NS)
+//     named TT_type_*, values are strings)
+//   - tag name (iff a markup element; is stored in a [GName], incl. NS)
 //   - token text (non-tag text content)
 //   - tag attributes
 //   - whatever additional stuff is available for Markdown tokens
+//     (to include Pandoc-style attributes)
 //
 // NOTE that XML Directives are later "normalized", but that's another story.
 // .
 type GToken struct {
-	// ==========================
-	// The original token, and
-	// other information about it
-	// ==========================
-	// BaseToken is the original token, wrapped. Keep it  around
+	// ==================================
+	// The original ("source code") token,
+	// and other information about it
+	// ==================================
+	// SourceToken is the original token, wrapped. Keep it around
 	// "just in case". Note tho that a [xml.Token] (or an entire
 	// [GToken]) might be overwritten/erased in later processing,
 	// if (for example) it is a CDATA that has only whitespace.
-	BaseToken interface{}
+	// FIXME: Make this an Echoer !
+	SourceToken interface{}
 	// MarkupType of the original token; the value is one of
 	// MU_type_(XML/HTML/MKDN/BIN). It is particularly helpful
 	// to have this info at the token level when we consider
 	// that for example, we can embed HTML tags in Markdown.
 	// NOTE that in the future, this could be a namespace.
 	SU.MarkupType
+	// XU.FilePosition is char position, and line nr & column nr.
 	XU.FilePosition
+	// Depth is the level of nesting of the source tag.
 	Depth int
 
 	// TagOrPrcsrDrctv (ex-"Keyword") is for holding
@@ -77,11 +81,13 @@ type GToken struct {
 
 	// GName is ONLY for
 	// [TT_type_ELMNT] and [TT_type_ENDLM].
-	GName
+	// GName
+	XU.XName
 
 	// GAtts is ONLY for [XML TT_type_ELMNT]
 	// and HTML and (finagled) MKDN.
-	GAtts
+	// GAtts
+	XU.XAtts
 
 	// IsBlock and IsInline are
 	// dupes of TagalogEntry ?
@@ -95,12 +101,12 @@ type GToken struct {
 	NodeKind, DitaTag, HtmlTag, NodeText string
 }
 
-// BaseTokenType returns `XML`, `MKDN`, `HTML`, or future stuff TBD.
-func (p *GToken) BaseTokenType() string {
-	if p.BaseToken == nil {
+// SourceTokenType returns `XML`, `MKDN`, `HTML`, or future stuff TBD.
+func (p *GToken) SourceTokenType() string {
+	if p.SourceToken == nil {
 		return "N/A-None"
 	}
-	switch p.BaseToken.(type) {
+	switch p.SourceToken.(type) {
 	case xml.Token:
 		return "XML"
 	case ast.Node:
@@ -108,6 +114,6 @@ func (p *GToken) BaseTokenType() string {
 	case html.Node:
 		return "HTML"
 	}
-	L.L.Error("FIXME: GToken.BaseTokenType <%T> unrecognized", p.BaseToken)
+	L.L.Error("FIXME: GToken.SourceTokenType <%T> unrecognized", p.SourceToken)
 	return "ERR!"
 }

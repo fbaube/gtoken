@@ -5,11 +5,11 @@ import (
 	"io"
 	S "strings"
 
+	CT "github.com/fbaube/ctoken"
 	"github.com/fbaube/lwdx"
 	L "github.com/fbaube/mlog"
 	PU "github.com/fbaube/parseutils"
 	SU "github.com/fbaube/stringutils"
-	XU "github.com/fbaube/xmlutils"
 	"golang.org/x/net/html"
 	// "golang.org/x/net/html/atom"
 )
@@ -85,7 +85,7 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 	// positions of the source tokens they are made from.
 	var gTokens = make([]*GToken, 0)
 	var gDepths = make([]int, 0)
-	var gFilPosns = make([]*XU.FilePosition, 0)
+	var gFilPosns = make([]*CT.FilePosition, 0)
 
 	var DL []int // Depth List
 	NL = pCPR.NodeSlice
@@ -153,24 +153,24 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 		//  DOCUMENT
 		// ==========
 		case html.DocumentNode:
-			pGTkn.TDType = XU.TD_type_DOCMT
+			pGTkn.TDType = CT.TD_type_DOCMT
 
 		case html.ErrorNode:
-			pGTkn.TDType = XU.TD_type_ERROR
+			pGTkn.TDType = CT.TD_type_ERROR
 			L.L.Warning("Got HTML ERR node")
 
 		case html.TextNode:
-			pGTkn.TDType = XU.TD_type_CDATA
+			pGTkn.TDType = CT.TD_type_CDATA
 			// The text of the Node
-			pGTkn.Datastring = theData
+			pGTkn.Text = theData
 
 		case html.ElementNode:
-			pGTkn.TDType = XU.TD_type_ELMNT
-			pGTkn.XName.Local = theData
+			pGTkn.TDType = CT.TD_type_ELMNT
+			pGTkn.CName.Local = theData
 
 			for _, xA := range pNode.Attr {
 				// gA := GAtt(xA)
-				pXAtt := new(XU.XAtt)
+				pXAtt := new(CT.CAtt)
 				// GAtt is just xml.Attr
 				// type Attr struct {
 				//      Name  Name
@@ -180,7 +180,7 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 				pXAtt.Name.Local = xA.Key
 				pXAtt.Name.Space = xA.Namespace
 				pXAtt.Value = xA.Val
-				pGTkn.XAtts = append(pGTkn.XAtts, *pXAtt)
+				pGTkn.CAtts = append(pGTkn.CAtts, *pXAtt)
 			}
 
 			var pTE *lwdx.TagalogEntry
@@ -194,17 +194,17 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 			}
 
 		case html.CommentNode:
-			pGTkn.TDType = XU.TD_type_COMNT
-			pGTkn.Datastring = theData
+			pGTkn.TDType = CT.TD_type_COMNT
+			pGTkn.Text = theData
 
 			if gotXmlProlog {
-				pGTkn.TDType = XU.TD_type_PINST
+				pGTkn.TDType = CT.TD_type_PINST
 				println("XML prelude processed as Comment!")
 			}
 
 		case html.DoctypeNode:
-			pGTkn.TDType = XU.TD_type_DRCTV
-			pGTkn.Datastring = theData
+			pGTkn.TDType = CT.TD_type_DRCTV
+			pGTkn.Text = theData
 			for _, a := range pNode.Attr {
 				// fmt.Printf("\t Attr: %+v \n", a)
 				L.L.Dbg("\t Attr: NS<%s> Key<%s> Val: %s", a.Namespace, a.Key, a.Val)
@@ -221,7 +221,7 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 				case html.RawNode:
 				  println("HTML RAW node")
 				case html.Directive: // type Directive []byte
-					pGTkn.TDType = XU.TD_type_DRCTV
+					pGTkn.TDType = CT.TD_type_DRCTV
 					s := S.TrimSpace(string([]byte(xt.(xml.Directive))))					pGTkn.Keyword, pGTkn.Datastring = SU.SplitOffFirstWord(s)
 		*/
 		default:

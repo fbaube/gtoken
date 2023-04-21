@@ -1,15 +1,15 @@
 package gtoken
 
 // This file: Structures for Generic Golang Tokens.
-// They are based on struct [xml.Token] returned by the Golang XML parser
-// but have been generalized to be usable for other LwDITA formats.
+// They are based on struct [xml.Token] and struct [CT.CToken],
+// then generalized to be usable for other LwDITA formats.
 
 import (
 	"encoding/xml"
+	CT "github.com/fbaube/ctoken"
 	"github.com/fbaube/lwdx"
 	L "github.com/fbaube/mlog"
-	SU "github.com/fbaube/stringutils"
-	XU "github.com/fbaube/xmlutils"
+	// SU "github.com/fbaube/stringutils"
 	"github.com/yuin/goldmark/ast"
 	"golang.org/x/net/html"
 )
@@ -32,70 +32,29 @@ import (
 // NOTE that XML Directives are later "normalized", but that's another story.
 // .
 type GToken struct {
-	// ==================================
-	// The original ("source code") token,
-	// and other information about it
-	// ==================================
-	// SourceToken is the original token, wrapped. Keep it around
-	// "just in case". Note tho that a [xml.Token] (or an entire
-	// [GToken]) might be overwritten/erased in later processing,
-	// if (for example) it is a CDATA that has only whitespace.
-	// FIXME: Make this an Echoer !
-	SourceToken interface{}
-	// MarkupType of the original token; the value is one of
-	// MU_type_(XML/HTML/MKDN/BIN). It is particularly helpful
-	// to have this info at the token level when we consider
-	// that for example, we can embed HTML tags in Markdown.
-	// NOTE that in the future, this could be a namespace.
-	SU.MarkupType
-	// XU.FilePosition is char position, and line nr & column nr.
-	XU.FilePosition
+	// ==========================================
+	// CToken has all the info about the original
+	// source token, when considered in isolation.
+	// ==========================================
+	// Fields:
+	//  - CT.SourceToken interface{}: "source code" token
+	//  - SU.MarkupType: one of SU.MU_type_(XML/HTML/MKDN/BIN)
+	//  - CT.FilePosition: char position, and line nr & column nr
+	//  - CT.TDType: type of [xml.Token] or subtype of [xml.Directive]
+	//  - CT.CName: alias of [xml.Name], only for elements
+	//  - CT.CAtts: alias of slice of [xml.Attr], only for start-elm
+	//  - Text string: CDATA / PI Instr / DOCTYPE root elm decl
+	//  - ControlStrings []string: XML PI Target / XML Drctv subtype
+	CT.CToken
+
 	// Depth is the level of nesting of the source tag.
 	Depth int
-
-	// TagOrPrcsrDrctv (ex-"Keyword") is for holding
-	// (a) a simple string of the tag of an element
-	//     (leaving out the namespace), or
-	// (b) the processor name (i.e the first string)
-	//     in an XML Processing Instruction (PI), or
-	// (c) an XML directive ("doctype", "element",
-	//     "attlist", "entity", etc.)
-	TagOrPrcsrDrctv string
-
-	// TagDirectiveType enumerates (a) the types of struct [GToken],
-	// and also (b) the types of struct [GTag], which are a strict
-	// superset of those for GToken. Therefore the two structs use
-	// a shared "type" enumeration, of type [TTType].
-	//
-	// NOTE that TD_type_ENDLM (`EndElement`) *might* be OK for
-	// a [GToken.Type] (this is a TBD) but it certainly is not
-	// OK for a [GTag.Type], cos the existence of a matching
-	// [EndElement] for every [StartElement] should be assumed
-	// (but need not actually be present) in a valid [GTree],
-	// when and where token depth info is available.
-	XU.TDType
-
-	// Datastring is ex-"Otherwords", ONLY
-	// for [TD_type_ELMNT] and [TD_type_ENDL].
-	Datastring string
-
-	// GName is ONLY for
-	// [TD_type_ELMNT] and [TD_type_ENDLM].
-	// GName
-	XU.XName
-
-	// GAtts is ONLY for [XML TD_type_ELMNT]
-	// and HTML and (finagled) MKDN.
-	// GAtts
-	XU.XAtts
-
 	// IsBlock and IsInline are
 	// dupes of TagalogEntry ?
 	IsBlock, IsInline bool
 	NodeLevel         int
-
+	// Key stuff
 	*lwdx.TagalogEntry
-
 	// DitaTag and HtmlTag are
 	// dupes of TagalogEntry ?
 	NodeKind, DitaTag, HtmlTag, NodeText string
@@ -107,6 +66,8 @@ func (p *GToken) SourceTokenType() string {
 		return "N/A-None"
 	}
 	switch p.SourceToken.(type) {
+	case CT.CToken:
+		return "XML"
 	case xml.Token:
 		return "XML"
 	case ast.Node:

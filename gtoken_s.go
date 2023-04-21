@@ -1,8 +1,8 @@
 package gtoken
 
 import (
+	CT "github.com/fbaube/ctoken"
 	L "github.com/fbaube/mlog"
-	XU "github.com/fbaube/xmlutils"
 	"io"
 )
 
@@ -12,34 +12,35 @@ func (T GToken) Echo() string {
 	// var s string
 	switch T.TDType {
 
-	case XU.TD_type_DOCMT:
+	case CT.TD_type_DOCMT:
 		return "<-- \"Doc\" DOCUMENT START -->"
 
-	case XU.TD_type_ELMNT:
-		return "<" + T.XName.Echo() + T.XAtts.Echo() + ">"
+	case CT.TD_type_ELMNT:
+		return "<" + T.CName.Echo() + T.CAtts.Echo() + ">"
 
-	case XU.TD_type_ENDLM:
-		return "</" + T.XName.Echo() + ">"
+	case CT.TD_type_ENDLM:
+		return "</" + T.CName.Echo() + ">"
 
-	case XU.TD_type_VOIDD:
+	case CT.TD_type_VOIDD:
 		L.L.Error("Bogus token <voidd/>")
 		return "ERR"
 
-	case XU.TD_type_CDATA:
-		return T.Datastring
+	case CT.TD_type_CDATA:
+		return T.Text
 
-	case XU.TD_type_PINST:
-		return "<?" + T.TagOrPrcsrDrctv + " " + T.Datastring + "?>"
+	case CT.TD_type_PINST:
+		return "<?" + T.ControlStrings[0] + " " + T.Text + "?>"
 
-	case XU.TD_type_COMNT:
-		return "<!-- " + T.Datastring + " -->"
+	case CT.TD_type_COMNT:
+		return "<!-- " + T.Text + " -->"
 
-	case XU.TD_type_DRCTV: // Directive subtypes,
+	case CT.TD_type_DRCTV: // Directive subtypes,
 		// after Directives have been normalized
-		return "<!" + T.TagOrPrcsrDrctv + " " + T.Datastring + ">"
+		return "<!" + T.ControlStrings[0] + " " +
+			T.ControlStrings[1] + " " + T.Text + ">"
 
 	default:
-		return "UNK<" + T.TagOrPrcsrDrctv + "> // " + T.Datastring
+		return "UNK<" + T.Text + ">"
 	}
 	return "<!-- ?! GToken.ERR ?! -->"
 }
@@ -53,7 +54,7 @@ func (T GToken) EchoTo(w io.Writer) {
 func (T GToken) String() string {
 	// return ("<!--" + T.TTType.LongForm() + "-->  " + T.Echo())
 	var s3 = string(T.TDType)
-	if s3 == XU.TD_type_ENDLM {
+	if s3 == CT.TD_type_ENDLM {
 		s3 = " / "
 	}
 	return ("[" + s3 + "] " + T.Echo())

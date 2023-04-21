@@ -5,10 +5,10 @@ import (
 	"io"
 	S "strings"
 
+	CT "github.com/fbaube/ctoken"
 	L "github.com/fbaube/mlog"
 	PU "github.com/fbaube/parseutils"
 	SU "github.com/fbaube/stringutils"
-	XU "github.com/fbaube/xmlutils"
 	"github.com/yuin/goldmark/ast"
 )
 
@@ -42,7 +42,7 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 	// the source tokens they are made from
 	var gTokens = make([]*GToken, 0)
 	var gDepths = make([]int, 0)
-	var gFilPosns = make([]*XU.FilePosition, 0)
+	var gFilPosns = make([]*CT.FilePosition, 0)
 
 	NL = pCPR.NodeSlice
 	DL = pCPR.NodeDepths
@@ -137,7 +137,7 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			pGTkn.NodeKind = "KindDocument"
 			pGTkn.DitaTag = "topic"
 			pGTkn.HtmlTag = "html"
-			pGTkn.TDType = XU.TD_type_DOCMT
+			pGTkn.TDType = CT.TD_type_DOCMT
 			fmt.Fprintln(w, "<Doc> ")
 
 		case ast.KindHeading:
@@ -146,8 +146,8 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			pGTkn.HtmlTag = "h%d"
 			n2 := mdNode.(*ast.Heading)
 			pGTkn.NodeLevel = n2.Level
-			pGTkn.TDType = XU.TD_type_ELMNT
-			pGTkn.XName.Local = fmt.Sprintf("h%d", n2.Level)
+			pGTkn.TDType = CT.TD_type_ELMNT
+			pGTkn.CName.Local = fmt.Sprintf("h%d", n2.Level)
 			fmt.Fprintf(w, "<h%d> \n", n2.Level)
 			// type Heading struct {
 			//   BaseBlock
@@ -384,8 +384,8 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			pGTkn.NodeKind = "KindParagraph"
 			pGTkn.DitaTag = "p"
 			pGTkn.HtmlTag = "p"
-			pGTkn.TDType = XU.TD_type_ELMNT
-			pGTkn.XName.Local = "p"
+			pGTkn.TDType = CT.TD_type_ELMNT
+			pGTkn.CName.Local = "p"
 			fmt.Fprintf(w, "<p> \n")
 			// // n2 := n.(*ast.Paragraph)
 			// // sDump = litter.Sdump(*n2)
@@ -439,7 +439,7 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 				if prevGT == nil {
 					fmt.Fprintf(w, "Can't merge text into prev nil \n")
 				} else {
-					prevGT.Datastring += theText
+					prevGT.Text += theText
 					prevGT.NodeText += theText
 					fmt.Fprintf(w, "(merged!) \n")
 					gTokens = append(gTokens, nil)
@@ -451,8 +451,8 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 			pGTkn.NodeText = theText
 			// pGTknNodeText = fmt.Sprintf("KindText:\n | %s", string(TheReader.Value(segment)))
 			// pGTknNodeText = / * fmt.Sprintf("KindText:\n | %s", */ string(pCPR.Reader.Value(segment)) //)
-			pGTkn.TDType = XU.TD_type_CDATA
-			pGTkn.Datastring = theText
+			pGTkn.TDType = CT.TD_type_CDATA
+			pGTkn.Text = theText
 			fmt.Fprintf(w, "Text<%s> \n", pGTkn.NodeText)
 			/* old code
 			if n.IsRaw() {

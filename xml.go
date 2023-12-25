@@ -24,7 +24,7 @@ import (
 // .
 func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 	var TL []CT.CToken // []xml.Token // Token List
-	var xTkn CT.CToken // xml.Token
+	var cTkn CT.CToken // xml.Token
 
 	var i int
 	var canSkip bool
@@ -44,24 +44,28 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 	var iDepth = 1 // current depth
 	var prDpth int // depth for printing
 	// =====================================
-	//  FOR Every XmlToken in the TokenList
+	//  FOR Every CToken in the TokenList
 	// =====================================
-	for i, xTkn = range TL {
+	for i, cTkn = range TL {
 		pGTkn = new(GToken)
-		pGTkn.SourceToken = xTkn // Also copies over TDType
-		pGTkn.MarkupType = SU.MU_type_XML
+		pGTkn.CToken/*SourceToken*/ = cTkn // Also copies over TDType
+		pGTkn.MarkupType = SU.MU_type_XML // superfluous ? 
 		prDpth = iDepth
 		canSkip = false
 
+		var xmlSrcTkn xml.Token
+		xmlSrcTkn = xml.CopyToken((cTkn.SourceToken).(xml.Token))
+
 		// Now process based on the Token type
-		switch xTkn.TDType {
+		switch cTkn.TDType {
 
 		case CT.TD_type_ELMNT: // xml.StartElement:
 			// pGTkn.TDType = CT.TD_type_ELMNT
 			// type xml.StartElement struct {
 			//     Name Name ; Attr []Attr }
 			var xSE xml.StartElement
-			xSE = xml.CopyToken(xTkn).(xml.StartElement)
+			xSE = xmlSrcTkn.(xml.StartElement)
+			// xSE = xml.CopyToken(cTkn.SourceToken.(xml.StartElement))
 			pGTkn.CName = CT.CName(xSE.Name)
 			pGTkn.CName.FixNS()
 			// println("Elm:", pGTkn.CName.String())
@@ -100,7 +104,7 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 			// pGTkn.TDType = CT.TD_type_ENDLM
 			// type xml.EndElement struct { Name Name }
 			var xEE xml.EndElement
-			xEE = xml.CopyToken(xTkn).(xml.EndElement)
+			xEE = xmlSrcTkn.(xml.EndElement)
 			pGTkn.CName = CT.CName(xEE.Name)
 			if pGTkn.CName.Space == XU.NS_XML {
 				pGTkn.CName.Space = "xml:"

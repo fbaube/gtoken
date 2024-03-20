@@ -187,7 +187,7 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 			pTE = lwdx.GetTEbyHdita(theData)
 			if pTE == nil {
 				L.L.Error("TAG NOT FOUND: " + theData)
-				println("TAG NOT FOUND:", theData)
+				// println("TAG NOT FOUND:", theData)
 			} else {
 				// L.L.Dbg("html-tag<%s> info: %+v", theData, *pTE)
 				pGTkn.TagalogEntry = pTE

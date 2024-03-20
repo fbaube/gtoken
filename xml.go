@@ -93,7 +93,7 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 			pTE = lwdx.GetTEbyXdita(theTag)
 			if pTE == nil {
 				L.L.Error("TAG NOT FOUND: " + theTag)
-				println("TAG NOT FOUND:", theTag)
+				// println("TAG NOT FOUND:", theTag)
 			} else {
 				// L.L.Dbg("xml-beg-tag<%s> info: %+v", theTag, *pTE)
 				pGTkn.TagalogEntry = pTE
@@ -119,7 +119,7 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 			pTE = lwdx.GetTEbyXdita(theTag)
 			if pTE == nil {
 				L.L.Error("TAG NOT FOUND: " + theTag)
-				println("TAG NOT FOUND:", theTag)
+				// println("TAG NOT FOUND:", theTag)
 			} else {
 				// L.L.Dbg("xml-end-tag<%s> info: %+v",	theTag, *pTE)
 				pGTkn.TagalogEntry = pTE

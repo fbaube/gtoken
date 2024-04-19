@@ -36,6 +36,11 @@ func (T GToken) Echo() string {
 
 	case CT.TD_type_DRCTV: // Directive subtypes,
 		// after Directives have been normalized
+		if T.ControlStrings == nil || len(T.ControlStrings) < 2 {
+		   L.L.Warning("T.CSs[] %+v", T.ControlStrings)
+		   L.L.Error("GToken.Echo: no Directive strings")
+		   return "<!BARF>"
+		} 
 		return "<!" + T.ControlStrings[0] + " " +
 			T.ControlStrings[1] + " " + T.Text + ">"
 

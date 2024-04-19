@@ -12,7 +12,7 @@ require (
 	github.com/fbaube/stringutils v0.0.0-20240322200159-80cb818c8713
 	github.com/fbaube/xmlutils v0.0.0-20240322200140-f0ad2fb0183d
 	github.com/yuin/goldmark v1.7.0
-	golang.org/x/net v0.22.0
+	golang.org/x/net v0.23.0
 )
 
 require (

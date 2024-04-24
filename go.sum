@@ -18,6 +18,8 @@ github.com/fbaube/ctoken v0.0.0-20240327145556-74a636fac33d h1:WFf7aF79i5QUeBmgM
 github.com/fbaube/ctoken v0.0.0-20240327145556-74a636fac33d/go.mod h1:60M9YGqLxZXikUa5+/rl6X4WuC5kDXq8JkHpTAO7Al0=
 github.com/fbaube/ctoken v0.0.0-20240331170316-48bee35bdbb4 h1:Sq/dmGPntC6YVeYrYvKCrZCkX46lqrMkYozEVBWox6M=
 github.com/fbaube/ctoken v0.0.0-20240331170316-48bee35bdbb4/go.mod h1:60M9YGqLxZXikUa5+/rl6X4WuC5kDXq8JkHpTAO7Al0=
+github.com/fbaube/ctoken v0.0.0-20240423072024-5de83ee55980 h1:V68eBzD0DpFmZIKlrDNLFfLOsbS5p+fOpWRjNSv6q1U=
+github.com/fbaube/ctoken v0.0.0-20240423072024-5de83ee55980/go.mod h1:nUo5Lzo7/1p+0gRd55FSrPA9kU+SW43kiZf9I5AVuDY=
 github.com/fbaube/humanbytes v0.0.0-20240227103335-a0b11501ad0e h1:2lRZ3QxDYaZ9F7RXLSL3zugdmeQTGOrRddBk+RVTRY0=
 github.com/fbaube/humanbytes v0.0.0-20240227103335-a0b11501ad0e/go.mod h1:WUS3tn4t+FViNsl4VOqYiV51cJNIIeMjLI9fOfm+Ug8=
 github.com/fbaube/logutils v0.0.0-20240118190821-fba0e702dd07 h1:pnt16LF2Gq3myuCjvsTRqc6KUUquBD+gIV9YKHsH+qw=
@@ -54,6 +56,10 @@ github.com/fbaube/xmlutils v0.0.0-20240327195046-548924e54dd1 h1:HymHSLLNfrapE9P
 github.com/fbaube/xmlutils v0.0.0-20240327195046-548924e54dd1/go.mod h1:SgIf7/lf+g4kTnFwWFf9F27SDREDSzYbTgBu7SppUzs=
 github.com/fbaube/xmlutils v0.0.0-20240417095348-51b71796b1db h1:S1QgCt58BS83W58MVlLhtCY/KyivINriBaQ7S8SZCRg=
 github.com/fbaube/xmlutils v0.0.0-20240417095348-51b71796b1db/go.mod h1:Za+S2ptbxwzKJekXNX2+wM3ubybYOcGlh9ZJGedjWqo=
+github.com/fbaube/xmlutils v0.0.0-20240419171240-3c269a908cfd h1:6h5Ng4mUwsV9ToaJXib/mBrS7/glEV3Hifvw/F5Zhb8=
+github.com/fbaube/xmlutils v0.0.0-20240419171240-3c269a908cfd/go.mod h1:Za+S2ptbxwzKJekXNX2+wM3ubybYOcGlh9ZJGedjWqo=
+github.com/fbaube/xmlutils v0.0.0-20240421123818-50b211574755 h1:fOs1IwJBJY9N/zWGv8Z6htqaHnaiVVP09mdYOCFA9g4=
+github.com/fbaube/xmlutils v0.0.0-20240421123818-50b211574755/go.mod h1:Za+S2ptbxwzKJekXNX2+wM3ubybYOcGlh9ZJGedjWqo=
 github.com/mattn/go-colorable v0.1.13 h1:fFA4WZxdEF4tXPZVKMLwD8oUnCTTo08duU7wxecdEvA=
 github.com/mattn/go-colorable v0.1.13/go.mod h1:7S9/ev0klgBDR4GtXTXX8a3vIGJpMovkB8vQcUbaXHg=
 github.com/mattn/go-isatty v0.0.16/go.mod h1:kYGgaQfpe5nmfYZH+SKPsOc2e4SrIfOl2e/yFXSvRLM=

@@ -29,6 +29,9 @@ func (T GToken) Echo() string {
 		return T.Text
 
 	case CT.TD_type_PINST:
+		if T.ControlStrings == nil || len(T.ControlStrings) == 0 {
+		   return "<?" + T.Text + "?>"
+		}
 		return "<?" + T.ControlStrings[0] + " " + T.Text + "?>"
 
 	case CT.TD_type_COMNT:

@@ -90,7 +90,7 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 	var DL []int // Depth List
 	NL = pCPR.NodeSlice
 	DL = pCPR.NodeDepths
-	L.L.Progress("gtkn/html...")
+	L.L.Debug("gtkn/html...")
 
 	// ================================
 	//  FOR Every Node in the NodeList
@@ -189,7 +189,7 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 				L.L.Error("H-TAG NOT FOUND: " + theData)
 				// println("TAG NOT FOUND:", theData)
 			} else {
-				// L.L.Dbg("html-tag<%s> info: %+v", theData, *pTE)
+				// L.L.Debug("html-tag<%s> info: %+v", theData, *pTE)
 				pGTkn.TagalogEntry = pTE
 			}
 
@@ -207,7 +207,7 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 			pGTkn.Text = theData
 			for _, a := range pNode.Attr {
 				// fmt.Printf("\t Attr: %+v \n", a)
-				L.L.Dbg("\t Attr: NS<%s> Key<%s> Val: %s", a.Namespace, a.Key, a.Val)
+				L.L.Debug("\t Attr: NS<%s> Key<%s> Val: %s", a.Namespace, a.Key, a.Val)
 			}
 		/* old API docs, maybe useful
 		                https://pkg.go.dev/golang.org/x/net/html#NodeType

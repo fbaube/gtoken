@@ -39,7 +39,7 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 	var gFilPosns = make([]*CT.FilePosition, 0)
 
 	TL = pCPR.NodeSlice
-	L.L.Progress("gtkn/xml...")
+	L.L.Debug("gtkn/xml...")
 
 	var iDepth = 1 // current depth
 	var prDpth int // depth for printing
@@ -95,7 +95,7 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 				L.L.Error("X-TAG NOT FOUND: " + theTag)
 				// println("TAG NOT FOUND:", theTag)
 			} else {
-				// L.L.Dbg("xml-beg-tag<%s> info: %+v", theTag, *pTE)
+				// L.L.Debug("xml-beg-tag<%s> info: %+v", theTag, *pTE)
 				pGTkn.TagalogEntry = pTE
 			}
 
@@ -121,7 +121,7 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 				L.L.Error("X-TAG NOT FOUND: " + theTag)
 				// println("TAG NOT FOUND:", theTag)
 			} else {
-				// L.L.Dbg("xml-end-tag<%s> info: %+v",	theTag, *pTE)
+				// L.L.Debug("xml-end-tag<%s> info: %+v",	theTag, *pTE)
 				pGTkn.TagalogEntry = pTE
 			}
 		}

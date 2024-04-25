@@ -46,7 +46,7 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 
 	NL = pCPR.NodeSlice
 	DL = pCPR.NodeDepths
-	L.L.Progress("gtkn/mkdn...")
+	L.L.Debug("gtkn/mkdn...")
 
 	var nodeType ast.NodeType // 1,2,3 = Block, Inline, Document
 	var nodeKind ast.NodeKind // Granular!

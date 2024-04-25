@@ -24,6 +24,8 @@ github.com/fbaube/humanbytes v0.0.0-20240227103335-a0b11501ad0e h1:2lRZ3QxDYaZ9F
 github.com/fbaube/humanbytes v0.0.0-20240227103335-a0b11501ad0e/go.mod h1:WUS3tn4t+FViNsl4VOqYiV51cJNIIeMjLI9fOfm+Ug8=
 github.com/fbaube/logutils v0.0.0-20240118190821-fba0e702dd07 h1:pnt16LF2Gq3myuCjvsTRqc6KUUquBD+gIV9YKHsH+qw=
 github.com/fbaube/logutils v0.0.0-20240118190821-fba0e702dd07/go.mod h1:VifbtSBHXXNZhfgnsxhS7D++YcGbPt7esvjC7FCbFW4=
+github.com/fbaube/logutils v0.0.0-20240424185106-74c4aec59ce1 h1:TROWHi4ogqajl3kEfc5DRJh7HgVC3tPyj7qaGe16B+s=
+github.com/fbaube/logutils v0.0.0-20240424185106-74c4aec59ce1/go.mod h1:Ulyk3vIjQ5L/NqJ9wmTMawBjqzAOvCs1jxF5iV3tS1w=
 github.com/fbaube/lwdx v0.0.0-20240117104547-f8ce73919cdd h1:ZEv7HqLjV3pSauBdQNg82XgsmwZbOI3MihffTctH1l0=
 github.com/fbaube/lwdx v0.0.0-20240117104547-f8ce73919cdd/go.mod h1:k5EDVHloyrrAVPqxW2oZEs/GtTWyG1RFsdZRJQay9LQ=
 github.com/fbaube/lwdx v0.0.0-20240311105247-37cbc89f10e3 h1:rtYqqV+U9rnIc/tozMCeW9lSXod+zI8c4K48zq7/WME=
@@ -36,6 +38,8 @@ github.com/fbaube/lwdx v0.0.0-20240327195153-e4bf7566f0ba h1:H7JsoiV9LvI5/vKgJm7
 github.com/fbaube/lwdx v0.0.0-20240327195153-e4bf7566f0ba/go.mod h1:yiFazFp4b87Hx1gX+z+u5N3zdizuuHKaORfkT1l0/sg=
 github.com/fbaube/mlog v0.0.0-20230904080411-cfac35fed413 h1:hXpL/x5iYx38UGHzGU6V9ONPYeeLxzfniZDbAblkplw=
 github.com/fbaube/mlog v0.0.0-20230904080411-cfac35fed413/go.mod h1:gdqN52o2Q28x8fcloz1M7KyknKnK6VPxPkAOc3+HxmQ=
+github.com/fbaube/mlog v0.0.0-20240424185134-3b40182c9674 h1:52Gz4s3MmkJeCrw594oW+hW43cFRX7e5dgnL8qw+D8Y=
+github.com/fbaube/mlog v0.0.0-20240424185134-3b40182c9674/go.mod h1:5u5CuBZQnE6/rzzzQXfOlaViZHsFnYO49043UTGDUEY=
 github.com/fbaube/parseutils v0.0.0-20240117103929-681897b1f883 h1:uWst8iOXICKxejsRDU3spW0q4iVMJp87yRCoT9/G+j8=
 github.com/fbaube/parseutils v0.0.0-20240117103929-681897b1f883/go.mod h1:KJMfLJ/C6vsNr2S2/yXCwmDz9BHENg40zTh0lPStijE=
 github.com/fbaube/stringutils v0.0.0-20240110181932-8dd4155bdb7f h1:KZvXZMbG4zCX/M53bkQp8uKA0IQuLfWZt5L9CqEfBCc=
@@ -60,6 +64,8 @@ github.com/fbaube/xmlutils v0.0.0-20240419171240-3c269a908cfd h1:6h5Ng4mUwsV9Toa
 github.com/fbaube/xmlutils v0.0.0-20240419171240-3c269a908cfd/go.mod h1:Za+S2ptbxwzKJekXNX2+wM3ubybYOcGlh9ZJGedjWqo=
 github.com/fbaube/xmlutils v0.0.0-20240421123818-50b211574755 h1:fOs1IwJBJY9N/zWGv8Z6htqaHnaiVVP09mdYOCFA9g4=
 github.com/fbaube/xmlutils v0.0.0-20240421123818-50b211574755/go.mod h1:Za+S2ptbxwzKJekXNX2+wM3ubybYOcGlh9ZJGedjWqo=
+github.com/fbaube/xmlutils v0.0.0-20240424095435-925ae6c0faf3 h1:FrdjzKTxmQLVn7QsHpXWuQdoI6sDmenn9IfMCdpt0Hc=
+github.com/fbaube/xmlutils v0.0.0-20240424095435-925ae6c0faf3/go.mod h1:w9UiZbPgQSey2348yBt29yhOFJ0HydON3AxkQDwlYQs=
 github.com/mattn/go-colorable v0.1.13 h1:fFA4WZxdEF4tXPZVKMLwD8oUnCTTo08duU7wxecdEvA=
 github.com/mattn/go-colorable v0.1.13/go.mod h1:7S9/ev0klgBDR4GtXTXX8a3vIGJpMovkB8vQcUbaXHg=
 github.com/mattn/go-isatty v0.0.16/go.mod h1:kYGgaQfpe5nmfYZH+SKPsOc2e4SrIfOl2e/yFXSvRLM=

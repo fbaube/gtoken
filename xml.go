@@ -49,7 +49,7 @@ func DoGTokens_xml(pCPR *XU.ParserResults_xml) ([]*GToken, error) {
 	for i, cTkn = range TL {
 		pGTkn = new(GToken)
 		pGTkn.CToken/*SourceToken*/ = cTkn // Also copies over TDType
-		pGTkn.MarkupType = SU.MU_type_XML // superfluous ? 
+		pGTkn.Raw_type = SU.Raw_type_XML // superfluous ? 
 		prDpth = iDepth
 		canSkip = false
 

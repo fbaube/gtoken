@@ -98,7 +98,7 @@ func DoGTokens_html(pCPR *PU.ParserResults_html) ([]*GToken, error) {
 	for i, pNode = range NL {
 		pGTkn = new(GToken)
 		pGTkn.SourceToken = pNode
-		pGTkn.MarkupType = SU.MU_type_HTML
+		pGTkn.Raw_type = SU.Raw_type_HTML
 		pGTkn.Depth = DL[i]
 		NT = pNode.Type
 		theData := PU.DataOfHtmlNode(pNode)

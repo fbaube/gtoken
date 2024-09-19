@@ -57,7 +57,7 @@ func DoGTokens_mkdn(pCPR *PU.ParserResults_mkdn) ([]*GToken, error) {
 	for i, mdNode = range NL {
 		pGTkn = new(GToken)
 		pGTkn.SourceToken = mdNode
-		pGTkn.MarkupType = SU.MU_type_MKDN
+		pGTkn.Raw_type = SU.Raw_type_MKDN
 		pGTkn.Depth = DL[i]
 		nodeType = mdNode.Type()
 		nodeKind = mdNode.Kind()

@@ -5,7 +5,7 @@ package gtoken
 // then generalized to be usable for other LwDITA formats.
 
 import (
-	"encoding/xml"
+	"github.com/nbio/xml"
 	CT "github.com/fbaube/ctoken"
 	"github.com/fbaube/lwdx"
 	L "github.com/fbaube/mlog"

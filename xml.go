@@ -1,7 +1,7 @@
 package gtoken
 
 import (
-	"encoding/xml"
+	"github.com/nbio/xml"
 	"fmt"
 	"io"
 	S "strings"
